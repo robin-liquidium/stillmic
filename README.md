@@ -25,9 +25,13 @@ mic -> Core Audio callback -> DeepFilterNet3 (C) -> ring buffer -> NoNoise Mic d
 
 Then pick **NoNoise Mic** as the microphone in your call app.
 
+## Modes
+
+**Standard** keeps the voice smoother. **Aggressive** cuts harder and uses less CPU in quiet rooms. Switch from the menu.
+
 ## Checking the engine
 
-`bench/dftract` runs the reference Rust implementation. `bench/dfn_bench.c` runs this one. `bench/gold.py` compares their output, which should differ by at most a few 16-bit steps. Run this after any change to `dfn.c`.
+`bench/dftract` runs the reference Rust implementation. `bench/dfn_bench.c` runs this one. `bench/gold.py` compares their output (run `dfn_bench` with `--aggressive`, which uses the reference's thresholds), which should differ by at most a few 16-bit steps. Run this after any change to `dfn.c`.
 
 ## Credits
 

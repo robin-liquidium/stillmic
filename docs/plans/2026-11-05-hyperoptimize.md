@@ -29,9 +29,22 @@ The engine's output matches the reference `deep_filter` 0.5.6 / tract to within 
 
 Live CPU depends on speech: frames judged as noise only skip both decoders. While speech played it reached about 6.5%. `coreaudiod` stayed at 6.6-8.1% in a quiet room, about the same as before.
 
+## Modes
+
+Picked by ear from level-matched clips of a real recording.
+
+| Mode | Local SNR thresholds (noise only / clean / deep filter) | Frame-to-frame gain wobble | Speech level change |
+|---|---|---|---|
+| Standard (default) | -15 / 35 / 35 dB | 1.28 dB | -5.0 dB |
+| Aggressive | -10 / 30 / 20 dB (libDF defaults) | 2.41 dB | -9.2 dB |
+
+The model's estimate never goes below -15 dB, so Standard runs the decoders on every frame. Offline quiet-room CPU is 1.33% versus 0.55%. A -14 dB cutoff recovers that, but wobble rises to 1.62 dB, so it was rejected.
+
+Live during a real call in Standard: NoNoise 6.5-7.8% CPU and 14.5 MB, `coreaudiod` 7.8-9.1%.
+
 ## Not yet tested
 
-- A real call app. Live tests used a recorder reading NoNoise Mic, with speech played through the laptop speakers.
+- Aggressive mode and mode switching live. Feedback from people on a real call.
 - Bluetooth and USB mics, sample-rate conversion, device switching and `coreaudiod` restarts at runtime.
 - Real room noise and listening.
 - Energy use (`powermetrics` needs sudo).
