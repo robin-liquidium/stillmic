@@ -24,7 +24,7 @@ Stillmic adds a microphone called **Stillmic** to your Mac. Pick it in Zoom, Mee
 ## Why Stillmic?
 
 - **Light:** the model is hand-ported to C with no machine learning framework. See the numbers below.
-- **Idle means idle:** audio only runs while an app is using the Stillmic mic. Otherwise it uses no CPU.
+- **Idle means idle:** the noise engine only runs while an app is using the Stillmic mic. Otherwise it's asleep, measured at 0.0% CPU.
 - **Private:** audio is processed on your Mac and never stored or sent. There are no analytics.
 - **Simple:** a menu bar icon with on/off, a mode, and a mic picker.
 
@@ -66,7 +66,7 @@ The engine matches the official DeepFilterNet implementation to within a couple 
 
 ## Privacy and permissions
 
-Stillmic has no network code of its own. Its only network request is checking for updates through Sparkle.
+Stillmic has no network code of its own. Its only network activity is checking for and downloading updates through Sparkle.
 
 - **Microphone:** to read your real mic. It's only open while an app is using the Stillmic mic.
 - **Administrator password:** only to install, update or remove the virtual mic, which lives in `/Library/Audio/Plug-Ins/HAL`.

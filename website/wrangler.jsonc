@@ -4,6 +4,7 @@
   "account_id": "81b27ab7c6fe3a3b3a0e6d31f7d2a381",
   "compatibility_date": "2026-11-05",
   "assets": { "directory": "./dist", "not_found_handling": "404-page" },
+  "routes": [{ "pattern": "stillmic.robin.build", "custom_domain": true }],
   "workers_dev": true,
   "preview_urls": false,
 }

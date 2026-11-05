@@ -338,9 +338,16 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard confirm("Install Stillmic Mic?", action: "Install") else { return }
         let hal = (installedDriver as NSString).deletingLastPathComponent
         let dest = shellQuote(installedDriver)
-        runPrivileged("/bin/mkdir -p \(shellQuote(hal)) && /bin/rm -rf \(dest) && /usr/bin/ditto \(shellQuote(source)) \(dest)"
-            + " && /usr/sbin/chown -R root:wheel \(dest) && (/usr/bin/xattr -dr com.apple.quarantine \(dest) || true)"
-            + " && (/usr/bin/killall coreaudiod || true)")
+        // Staged and backup names don't end in .driver, so coreaudiod ignores them. The working
+        // driver is only moved once the new copy is complete, and comes back if the swap fails.
+        let staged = shellQuote(installedDriver + ".new")
+        let backup = shellQuote(installedDriver + ".old")
+        runPrivileged("/bin/mkdir -p \(shellQuote(hal)) && /bin/rm -rf \(staged) \(backup)"
+            + " && /usr/bin/ditto \(shellQuote(source)) \(staged)"
+            + " && /usr/sbin/chown -R root:wheel \(staged) && (/usr/bin/xattr -dr com.apple.quarantine \(staged) || true)"
+            + " && (if [ -e \(dest) ]; then /bin/mv \(dest) \(backup); fi)"
+            + " && { /bin/mv \(staged) \(dest) || { if [ -e \(backup) ]; then /bin/mv \(backup) \(dest); fi; exit 1; }; }"
+            + " && /bin/rm -rf \(backup) && (/usr/bin/killall coreaudiod || true)")
     }
 
     @objc private func uninstallDriver() {

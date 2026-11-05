@@ -6,9 +6,9 @@ import Page from '../layouts/Page.astro';
 import release from '../../../release.json';
 
 const stats = [
-  { value: '~7%', label: 'of one CPU core, during a real call' },
-  { value: '~16 MB', label: 'of memory while you talk' },
-  { value: '0%', label: 'CPU when no app is using the mic' },
+  { value: '~7%', label: 'of one CPU core, on a real call' },
+  { value: '~16 MB', label: 'of memory, estimated, while you talk' },
+  { value: '0.0%', label: 'CPU measured when no app is using the mic' },
   { value: '0 bytes', label: 'of your audio leave your Mac' },
 ];
 
@@ -26,7 +26,7 @@ const features = [
   {
     tag: '03 / Idle',
     title: 'Idle means idle.',
-    text: 'Stillmic only runs while an app is using it. The rest of the day it uses no CPU and your real mic stays closed.',
+    text: 'The noise engine only runs while an app is using the Stillmic mic. The rest of the day it’s asleep and your real mic stays closed.',
   },
   {
     tag: '04 / Modes',
@@ -104,8 +104,8 @@ const faq = [
         ))}
       </dl>
       <p class="small">
-        Measured on an M4 Pro. Yours will vary with your Mac and how much you
-        talk. macOS’s own audio service uses some CPU on top.
+        Early measurements on an M4 Pro. Yours will vary with your Mac and how
+        much you talk. macOS’s own audio service uses some CPU on top.
       </p>
     </section>
 

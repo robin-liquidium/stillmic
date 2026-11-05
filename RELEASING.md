@@ -24,7 +24,7 @@ The release workflow loads them into an ephemeral keychain and removes the tempo
 3. Commit and push `main`, wait for Checks on that exact commit, then create and push one immutable `vVERSION` tag.
 4. The Release workflow creates a draft, submits the exact signed app and DMG to Apple, and stores hashes plus submission IDs in `release-state.json`. Scheduled runs resume the same draft while notarization is pending.
 5. Once Apple accepts both submissions, the workflow staples and verifies them, uploads stable and versioned ZIP/DMG files plus checksums and evidence, removes temporary submissions, and publishes the release.
-6. Download the public assets into a fresh temporary directory. Verify `SHA256SUMS`, the app and DMG staples, Gatekeeper, both architectures, version/build metadata, and the stable latest-release URLs in the README.
+6. Download the public assets into a fresh temporary directory. Verify `SHA256SUMS`, the app and DMG staples, Gatekeeper, the arm64 architecture, version/build metadata, and the stable latest-release URLs in the README.
 
 The final assets are `Stillmic-VERSION.dmg`, `Stillmic.dmg`, `Stillmic-VERSION.zip`, `Stillmic.zip`, `appcast.xml`, `release.json`, `notarization.json`, `release-state.json`, and `SHA256SUMS`. The appcast is generated from the notarized versioned DMG with Sparkle's pinned tools and is Ed25519-signed. The app embeds the matching public key and requires signed feeds.
 

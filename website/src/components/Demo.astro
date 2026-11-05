@@ -86,6 +86,7 @@ const duration = `0:${String(Math.round(demo.seconds)).padStart(2, '0')}`;
     let on = true;
     let lastBar = -1;
     let frame = 0;
+    let loading = false;
 
     const clock = (s: number) =>
       `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -105,7 +106,7 @@ const duration = `0:${String(Math.round(demo.seconds)).padStart(2, '0')}`;
 
     function position() {
       if (!playing || !ctx) return offset;
-      return (offset + ctx.currentTime - startedAt) % duration;
+      return (offset + Math.max(0, ctx.currentTime - startedAt)) % duration;
     }
 
     function tick() {
@@ -127,13 +128,20 @@ const duration = `0:${String(Math.round(demo.seconds)).padStart(2, '0')}`;
 
     async function load() {
       if (buffers) return;
-      ctx = new AudioContext();
-      buffers = await Promise.all(
-        ['original', 'stillmic'].map(async (name) => {
-          const response = await fetch(`/demo/${name}.m4a`);
-          return ctx!.decodeAudioData(await response.arrayBuffer());
-        }),
-      );
+      const context = new AudioContext();
+      try {
+        buffers = await Promise.all(
+          ['original', 'stillmic'].map(async (name) => {
+            const response = await fetch(`/demo/${name}.m4a`);
+            if (!response.ok) throw new Error(response.statusText);
+            return context.decodeAudioData(await response.arrayBuffer());
+          }),
+        );
+        ctx = context;
+      } catch (error) {
+        await context.close();
+        throw error;
+      }
     }
 
     function stopSources() {
@@ -169,6 +177,8 @@ const duration = `0:${String(Math.round(demo.seconds)).padStart(2, '0')}`;
 
     async function setPlaying(next: boolean) {
       if (next) {
+        if (loading) return; // a second click while audio loads must not start it twice
+        loading = true;
         root!.classList.add('is-loading');
         try {
           await load();
@@ -178,6 +188,7 @@ const duration = `0:${String(Math.round(demo.seconds)).padStart(2, '0')}`;
           state.textContent = 'Audio couldn’t load';
           return;
         } finally {
+          loading = false;
           root!.classList.remove('is-loading');
         }
         playing = true;
@@ -213,11 +224,19 @@ const duration = `0:${String(Math.round(demo.seconds)).padStart(2, '0')}`;
       seek((event.clientX - box.left) / box.width);
     });
     wave.addEventListener('keydown', (event) => {
-      const step =
-        event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
-      if (!step) return;
+      const here = position();
+      const targets: Record<string, number> = {
+        ArrowRight: here + 1,
+        ArrowUp: here + 1,
+        ArrowLeft: here - 1,
+        ArrowDown: here - 1,
+        Home: 0,
+        End: duration,
+      };
+      const target = targets[event.key];
+      if (target === undefined) return;
       event.preventDefault();
-      seek((position() + step) / duration);
+      seek(target / duration);
     });
 
     // The first thing the page shows: the noise settling once it comes into view.

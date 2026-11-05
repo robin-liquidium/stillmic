@@ -64,5 +64,5 @@ GPT-6.1 Sol reviewed the code statically. All six findings were addressed: input
 ## Decisions
 
 - Minimum macOS is 15, for `BLASSetThreading`.
-- Compiled with `-mcpu=apple-m4`, so older chips aren't a target.
+- Compiled for any Apple Silicon Mac (`-mcpu=apple-m1`), arm64 only. That measured the same as `-mcpu=apple-m4`.
 - Only the first two input channels are mixed, so an interface whose mic is on a later channel would need a channel picker.
