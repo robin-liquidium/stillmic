@@ -6,8 +6,8 @@ import Page from '../layouts/Page.astro';
 import release from '../../../release.json';
 
 const stats = [
-  { value: '~7%', label: 'of one CPU core, on a real call' },
-  { value: '~16 MB', label: 'of memory, estimated, while you talk' },
+  { value: '~8%', label: 'of one CPU core, on a real call' },
+  { value: '~23 MB', label: 'of memory while you talk' },
   { value: '0.0%', label: 'CPU measured when no app is using the mic' },
   { value: '0 bytes', label: 'of your audio leave your Mac' },
 ];
@@ -104,7 +104,7 @@ const faq = [
         ))}
       </dl>
       <p class="small">
-        Early measurements on an M4 Pro. Yours will vary with your Mac and how
+        Measured on an M4 Pro. Yours will vary with your Mac and how
         much you talk. macOS’s own audio service uses some CPU on top.
       </p>
     </section>

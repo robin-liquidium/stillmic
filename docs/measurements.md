@@ -66,3 +66,7 @@ GPT-6.1 Sol reviewed the code statically. All six findings were addressed: input
 - Minimum macOS is 15, for `BLASSetThreading`.
 - Compiled for any Apple Silicon Mac (`-mcpu=apple-m1`), arm64 only. That measured the same as `-mcpu=apple-m4`.
 - Only the first two input channels are mixed, so an interface whose mic is on a later channel would need a channel picker.
+
+## Signed build
+
+Signed Stillmic 0.1.0 with Sparkle, on a real Helium call plus a test reader, after a fresh launch: 6.3-9.5% CPU and 22.6 MB, `coreaudiod` 12-17%. With only the call reading the mic, an earlier run showed `coreaudiod` at 6.5-8%. The signed driver loads in `coreaudiod`, and the install menu item works from the hardened app. A long-running app that has shown the admin prompt measured 38.6 MB.

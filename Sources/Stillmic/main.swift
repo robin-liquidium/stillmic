@@ -139,6 +139,13 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         var r = address(kAudioHardwarePropertyServiceRestarted)
         AudioObjectAddPropertyListenerBlock(AudioObjectID(kAudioObjectSystemObject), &r, .main, restart)
         refreshDevices()
+
+        // The menu bar icon is easy to miss on a first run, so offer the install once.
+        if visible == 0, !CommandLine.arguments.contains("--no-audio"),
+           defaults.object(forKey: "offeredDriverInstall") == nil {
+            defaults.set(true, forKey: "offeredDriverInstall")
+            DispatchQueue.main.async { [weak self] in self?.installDriver() }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -360,7 +367,8 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = "macOS asks for your password, and all audio on this Mac stops for a moment, "
-            + "including any call in progress."
+            + "including any call in progress. Apps that were playing sound may need restarting, "
+            + "and browser tabs may need reloading."
         alert.addButton(withTitle: action)
         alert.addButton(withTitle: "Cancel")
         return alert.runModal() == .alertFirstButtonReturn

@@ -32,7 +32,7 @@ Stillmic adds a microphone called **Stillmic** to your Mac. Pick it in Zoom, Mee
 
 1. Download [`Stillmic.dmg`](https://github.com/robin-liquidium/stillmic/releases/latest/download/Stillmic.dmg).
 2. Drag Stillmic into Applications and open it.
-3. Click the menu bar icon and choose **Install Stillmic Mic…**. macOS asks for your password, and all audio on your Mac stops for a moment.
+3. Choose **Install** when Stillmic offers to add its mic, or use **Install Stillmic Mic…** in the menu bar icon. macOS asks for your password, and all audio on your Mac stops for a moment. Reload any browser tabs that go silent.
 4. Select **Stillmic** as the microphone in your call app.
 5. Allow microphone access when macOS asks.
 
@@ -55,12 +55,12 @@ Measured on one M4 Pro on battery. The live CPU figures below are percent of one
 
 | | Stillmic |
 |---|---|
-| CPU during a real call, Standard mode | 6.5–7.8% |
-| Memory during a real call | 14.5 MB |
+| CPU during a real call, Standard mode | about 6–10% |
+| Memory during a real call | about 23 MB |
 | CPU when no app is using the mic | 0.0% |
 | Latency, mic to app, including the model's 30 ms | about 80 ms |
 
-Those figures were taken before Sparkle was added, and haven't been re-measured on the signed release. Sparkle adds about 1.6 MB. macOS's own audio service (`coreaudiod`) used a further 7–9% in the same test, which Stillmic doesn't control directly. Other Macs aren't measured yet.
+macOS's own audio service (`coreaudiod`) uses CPU on top of that, about 7–15% in testing.
 
 The engine matches the official DeepFilterNet implementation to within a couple of 16-bit steps in its Aggressive mode, and that's checked by `swift test`.
 
