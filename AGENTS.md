@@ -21,3 +21,7 @@ script/build_and_run.sh --build   # builds and signs only
 ```
 
 Measurements and what's still untested are in `docs/plans/2026-11-05-hyperoptimize.md`. Releasing is in `RELEASING.md`.
+
+## Website
+
+`website/` is an Astro site on a Cloudflare Worker. In that folder, run `bun lint`, `bun check`, `bun fmt:check` and `bun run build` before deploying with `bun run deploy`. It reads the version from `release.json`, so redeploy after a release. `src/data/demo.json` and `public/demo/` come from the real engine and shouldn't be edited by hand. Measurements are in `docs/measurements.md`.

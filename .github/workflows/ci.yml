@@ -16,3 +16,17 @@ jobs:
       - run: python3 script/prepare_release.py && git diff --exit-code
       - run: python3 -m py_compile script/*.py
       - run: python3 script/package_app.py
+
+  website:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun lint
+      - run: bun check
+      - run: bun fmt:check
+      - run: bun run build

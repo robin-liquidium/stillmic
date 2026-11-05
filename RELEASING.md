@@ -47,3 +47,7 @@ The private key must remain stable across releases. To load the secret or export
 `*_submitting` means the response may have been lost. Inspect Apple notarization history, reconcile the artifact name and timestamp, save the recovered submission ID into the existing draft state, and move the phase to `*_pending`. Do not submit again unless Apple history proves no request exists.
 
 `*_rejected` requires reading the matching notarization log and fixing the stated issue. A source change requires a new version, build, commit, and tag. Published tags are immutable.
+
+## Website
+
+After a release is public, run `bun run deploy` in `website/` so the version and changelog update.

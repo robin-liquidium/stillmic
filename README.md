@@ -10,12 +10,14 @@
 </p>
 
 <p align="center">
+  <a href="https://stillmic.robin.build"><strong>stillmic.robin.build</strong></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/robin-liquidium/stillmic/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/robin-liquidium/stillmic?style=flat-square"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
   <img alt="macOS 15 or later on Apple Silicon" src="https://img.shields.io/badge/macOS-15%2B%20Apple%20Silicon-black?style=flat-square&logo=apple">
 </p>
-
-<!-- TODO: add a real screenshot of the menu once the app is tested. -->
 
 Stillmic adds a microphone called **Stillmic** to your Mac. Pick it in Zoom, Meet, Slack or any other app, and they hear your voice with the keyboard, fan and street taken out. It runs the [DeepFilterNet3](https://github.com/Rikorose/DeepFilterNet) model locally, with no account and nothing sent anywhere.
 
@@ -109,6 +111,8 @@ script/build_and_run.sh --build
 ```
 mic -> Core Audio callback -> DeepFilterNet3 (C) -> ring buffer -> Stillmic driver -> your app
 ```
+
+The website is in `website/`, built with Astro and deployed as a Cloudflare Worker. Use `bun lint`, `bun check` and `bun fmt` there.
 
 ## Credits
 
