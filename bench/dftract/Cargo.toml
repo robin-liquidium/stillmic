@@ -1,0 +1,15 @@
+[package]
+name="dfbench"
+version="0.1.0"
+edition="2021"
+[dependencies]
+df = { package = "deep_filter", git = "https://github.com/Rikorose/DeepFilterNet", tag = "v0.5.6", default-features = false, features = ["tract", "default-model"] }
+hound = "3.5"
+ndarray = "0.15"
+libc = "0.2"
+[profile.release]
+opt-level=3
+lto="fat"
+codegen-units=1
+panic="abort"
+[workspace]
