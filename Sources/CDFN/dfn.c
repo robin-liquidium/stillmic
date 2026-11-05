@@ -7,6 +7,7 @@
 #include <Accelerate/Accelerate.h>
 #include <fcntl.h>
 #include <math.h>
+#include <stdatomic.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,16 @@
 
 enum { HOP = DFN_HOP, FFT = 960, BINS = 481, ERB = 32, NDF = 96, ORDER = 5, GH = 256, CH = 64 };
 #define WEIGHT_FLOATS 2134384
+
+// Local SNR in dB that decides which stages run. The model's estimate spans -15 to 35 dB.
+typedef struct {
+    float noise_only, clean, deep_filter;
+} thresholds_t;
+
+static const thresholds_t THRESHOLDS[] = {
+    [DFN_STANDARD] = {-15.f, 35.f, 35.f},
+    [DFN_AGGRESSIVE] = {-10.f, 30.f, 20.f},
+};
 
 typedef struct {
     const float *w, *r, *b;
@@ -73,6 +84,7 @@ struct dfn {
     // Scratch
     float s1[CH * NDF], s4[3 * GH], s5[3 * GH];
     float m[ERB], coefs[NDF * 10], cp[10 * NDF], out_spec[2 * BINS];
+    _Atomic int mode;
 };
 
 static inline float clampf(float x, float lo, float hi) { return x < lo ? lo : (x > hi ? hi : x); }
@@ -405,10 +417,11 @@ void dfn_process(dfn_t *d, const float *in, float *out) {
     // Frame the mask applies to: two hops behind the newest (conv lookahead).
     const float *y = d->spec[(d->spec_i + ORDER - 2) % ORDER];
     float *o = d->out_spec;
+    const thresholds_t th = THRESHOLDS[atomic_load_explicit(&d->mode, memory_order_relaxed)];
 
-    if (lsnr < -10.f) {  // only noise
+    if (lsnr < th.noise_only) {  // only noise
         memset(o, 0, sizeof(d->out_spec));
-    } else if (lsnr > 30.f) {  // clean speech: pass through
+    } else if (lsnr > th.clean) {  // clean speech: pass through
         memcpy(o, y, sizeof(d->out_spec));
     } else {
         erb_decoder(d);
@@ -420,7 +433,7 @@ void dfn_process(dfn_t *d, const float *in, float *out) {
                 o[2 * bin + 1] = y[2 * bin + 1] * g;
             }
         }
-        if (lsnr <= 20.f) {
+        if (lsnr <= th.deep_filter) {
             df_decoder(d);
             memset(o, 0, sizeof(float) * 2 * NDF);
             for (int n = 0; n < ORDER; n++) {
@@ -434,6 +447,10 @@ void dfn_process(dfn_t *d, const float *in, float *out) {
         }
     }
     synthesis(d, o, out);
+}
+
+void dfn_set_mode(dfn_t *d, dfn_mode_t mode) {
+    atomic_store_explicit(&d->mode, (int)mode, memory_order_relaxed);
 }
 
 void dfn_reset(dfn_t *d) {

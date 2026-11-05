@@ -18,4 +18,6 @@ void nn_pipeline_stop(nn_pipeline_t *p);
 /// false passes the mic through unprocessed. Safe to call while running.
 void nn_pipeline_set_enabled(nn_pipeline_t *p, bool enabled);
 
+void nn_pipeline_set_aggressive(nn_pipeline_t *p, bool aggressive);
+
 #endif

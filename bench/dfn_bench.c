@@ -16,6 +16,8 @@ int main(int c, char **v) {
   double f0 = fp();
   dfn_t *d = dfn_create(v[1]);
   if (!d) { puts("create failed"); return 1; }
+  // Compare against the reference with --aggressive: those are libDF's default thresholds.
+  if (c > 4 && !strcmp(v[4], "--aggressive")) dfn_set_mode(d, DFN_AGGRESSIVE);
   double f1 = fp();
   FILE *in = fopen(v[2], "rb"); fseek(in, 0, SEEK_END); long sz = ftell(in); fseek(in, 0, 0);
   uint8_t hdr[44]; fread(hdr, 1, 44, in); long n = (sz - 44) / 2 / DFN_HOP;

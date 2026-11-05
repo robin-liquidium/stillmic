@@ -6,6 +6,14 @@
 
 typedef struct dfn dfn_t;
 
+typedef enum {
+    DFN_STANDARD = 0,    // keeps the model running on every frame for a smoother voice
+    DFN_AGGRESSIVE = 1,  // libDF's default thresholds: hard cuts and less CPU in quiet rooms
+} dfn_mode_t;
+
+/// Safe to call from any thread while audio is running.
+void dfn_set_mode(dfn_t *d, dfn_mode_t mode);
+
 /// Maps the weights file and allocates all state. Returns NULL on failure.
 dfn_t *dfn_create(const char *weights_path);
 void dfn_destroy(dfn_t *d);

@@ -94,6 +94,11 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         set { defaults.set(newValue, forKey: "enabled") }
     }
 
+    private var aggressive: Bool {
+        get { defaults.bool(forKey: "aggressive") }
+        set { defaults.set(newValue, forKey: "aggressive") }
+    }
+
     init(pipeline: OpaquePointer) {
         self.pipeline = pipeline
     }
@@ -112,6 +117,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         nn_pipeline_set_enabled(pipeline, enabled)
+        nn_pipeline_set_aggressive(pipeline, aggressive)
         let listener: AudioObjectPropertyListenerBlock = { [weak self] _, _ in self?.refreshDevices() }
         devicesListener = listener
         var a = address(kAudioHardwarePropertyDevices)
@@ -246,6 +252,18 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         toggle.state = enabled ? .on : .off
         menu.addItem(toggle)
 
+        let modes = NSMenu()
+        for (title, value) in [("Standard", false), ("Aggressive", true)] {
+            let item = NSMenuItem(title: title, action: #selector(selectMode(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = value
+            item.state = value == aggressive ? .on : .off
+            modes.addItem(item)
+        }
+        let modeItem = NSMenuItem(title: "Mode", action: nil, keyEquivalent: "")
+        modeItem.submenu = modes
+        menu.addItem(modeItem)
+
         let mics = NSMenu()
         let current = preferredMic()?.uid
         for mic in inputDevices() {
@@ -279,6 +297,11 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         enabled.toggle()
         nn_pipeline_set_enabled(pipeline, enabled)
         updateIcon()
+    }
+
+    @objc private func selectMode(_ sender: NSMenuItem) {
+        aggressive = sender.representedObject as? Bool ?? false
+        nn_pipeline_set_aggressive(pipeline, aggressive)
     }
 
     @objc private func selectMic(_ sender: NSMenuItem) {

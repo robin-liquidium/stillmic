@@ -236,6 +236,10 @@ void nn_pipeline_destroy(nn_pipeline_t *p) {
 
 void nn_pipeline_set_enabled(nn_pipeline_t *p, bool enabled) { atomic_store(&p->enabled, enabled); }
 
+void nn_pipeline_set_aggressive(nn_pipeline_t *p, bool aggressive) {
+    dfn_set_mode(p->dfn, aggressive ? DFN_AGGRESSIVE : DFN_STANDARD);
+}
+
 OSStatus nn_pipeline_start(nn_pipeline_t *p, AudioObjectID mic, AudioObjectID engine) {
     nn_pipeline_stop(p);
     dfn_reset(p->dfn);
