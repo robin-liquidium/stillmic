@@ -1,0 +1,7 @@
+[fmt]
+ignorePatterns = ["dist", ".astro", ".wrangler", "bun.lock", "src/data/demo.json", "public/demo"]
+
+[lint]
+typeAware = true
+maxWarnings = 0
+ignorePatterns = ["dist", ".astro", ".wrangler", "src/data/demo.json", "public"]

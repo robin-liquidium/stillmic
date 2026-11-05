@@ -112,7 +112,7 @@ script/build_and_run.sh --build
 mic -> Core Audio callback -> DeepFilterNet3 (C) -> ring buffer -> Stillmic driver -> your app
 ```
 
-The website is in `website/`, built with Astro and deployed as a Cloudflare Worker. Use `bun lint`, `bun check` and `bun fmt` there.
+The website is in `website/`, built with Astro and deployed as a Cloudflare Worker. Use `bun run lint`, `bun run check` and `bun run fmt` there.
 
 ## Credits
 

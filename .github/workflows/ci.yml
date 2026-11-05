@@ -25,8 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
-      - run: bun lint
-      - run: bun check
-      - run: bun fmt:check
+      - run: bun run fmt:check
+      - run: bun run lint
+      - run: bun run check
       - run: bun run build

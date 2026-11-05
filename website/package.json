@@ -6,18 +6,19 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "bun run build && wrangler dev",
-    "check": "astro check",
-    "lint": "biome lint .",
-    "fmt": "prettier --write .",
-    "fmt:check": "prettier --check .",
-    "deploy": "bun run build && wrangler deploy"
+    "check": "bun check --no-script && astro check",
+    "lint": "bun lint --no-script",
+    "fmt": "bun fmt --no-script && prettier --write 'src/**/*.astro'",
+    "fmt:check": "bun fmt --check --no-script && prettier --check 'src/**/*.astro'",
+    "deploy": "bun run build && wrangler deploy",
+    "lint:fix": "bun lint --no-script --fix"
   },
   "dependencies": {
     "astro": "7.3.2"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "@biomejs/biome": "2.5.13",
+    "bun": "1.4.4-canary.20261102.1",
     "prettier": "3.9.6",
     "prettier-plugin-astro": "1.0.0",
     "typescript": "6",
