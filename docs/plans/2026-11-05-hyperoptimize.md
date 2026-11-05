@@ -1,14 +1,14 @@
-# Hyperoptimize NoNoise for M4 Pro
+# Hyperoptimizing Stillmic on an M4 Pro
 
 Goal: microphone noise removal only, with the lowest CPU and RAM possible on an M4 Pro. Everything else was removed.
 
-Base commit: `b5844a8` (v1.5.1).
+Base commit: `b5844a8` (NoNoise-Mac v1.5.1), the "Stock 1.5.1" column below.
 
 ## What was built
 
 - `Sources/CDFN/dfn.c`: DeepFilterNet3 hand-ported to C, using official weights. No CoreML.
 - `Sources/CDFN/pipeline.c`: Core Audio callbacks only, no `AVCaptureSession` or `AVAudioEngine`.
-- `Sources/NoNoiseMac/main.swift`: AppKit status item with a menu built only when opened.
+- `Sources/Stillmic/main.swift`: AppKit status item with a menu built only when opened.
 - The driver is unchanged, so installing the app does not restart `coreaudiod`.
 
 ## Measurements
@@ -28,6 +28,11 @@ M4 Pro on battery. 60 s test clip: text-to-speech with synthetic fan, hum and cl
 The engine's output matches the reference `deep_filter` 0.5.6 / tract to within 1 16-bit step on the test clip (-101.6 dB difference). The reference itself uses 3.9% CPU and about 42 MB.
 
 Live CPU depends on speech: frames judged as noise only skip both decoders. While speech played it reached about 6.5%. `coreaudiod` stayed at 6.6-8.1% in a quiet room, about the same as before.
+
+## Release build
+
+- `-mcpu=apple-m1` instead of `-mcpu=apple-m4`: no measurable difference. Offline CPU was 1.28-1.29% vs 1.29-1.30% in Standard and 1.15-1.16% vs 1.15-1.17% in Aggressive, over 3 runs each. Most of the work is in Accelerate, which picks its own code path at runtime.
+- Sparkle: 13.6 MB without the updater started, 15.2 MB with it, measured with `--no-audio` (framework linked in both). Earlier builds with no Sparkle linked measured 13.8 MB in the same mode.
 
 ## Modes
 
@@ -49,6 +54,8 @@ Live during a real call in Standard: NoNoise 6.5-7.8% CPU and 14.5 MB, `coreaudi
 - Real room noise and listening.
 - Energy use (`powermetrics` needs sudo).
 - Whether BLAS stays allocation-free inside the audio callback. Threading is forced single and the path is warmed up off-thread, but this is not proven.
+
+The signed release has not carried live audio yet. Its driver, device names and install-from-menu flow are new and need a live test: that a hardened-runtime, Developer ID signed driver loads in `coreaudiod`, and that `do shell script ... with administrator privileges` works from the hardened app with no Apple Events entitlement.
 
 ## Independent review
 

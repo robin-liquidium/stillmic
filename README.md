@@ -1,38 +1,123 @@
-# NoNoise
+<p align="center">
+  <img src="Resources/StillmicIcon.png" width="144" alt="Stillmic app icon">
+</p>
 
-A menu bar app that removes background noise from your microphone. Nothing else.
+<h1 align="center">Stillmic</h1>
 
-Other apps select the **NoNoise Mic** input. NoNoise runs only while an app is reading that input, and uses no audio processing otherwise.
+<p align="center">
+  <strong>Background noise removal for your Mac's microphone.</strong><br>
+  Free, open source, and light enough to leave running. Your audio stays on your Mac.
+</p>
 
-Built for Apple Silicon, tuned for M4 (`-mcpu=apple-m4` in `Package.swift`). Fork of [NoNoise-Mac](https://github.com/ivalsaraj/NoNoise-Mac).
+<p align="center">
+  <a href="https://github.com/robin-liquidium/stillmic/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/robin-liquidium/stillmic?style=flat-square"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
+  <img alt="macOS 15 or later on Apple Silicon" src="https://img.shields.io/badge/macOS-15%2B%20Apple%20Silicon-black?style=flat-square&logo=apple">
+</p>
 
-```
-mic -> Core Audio callback -> DeepFilterNet3 (C) -> ring buffer -> NoNoise Mic driver -> your app
-```
+<!-- TODO: add a real screenshot of the menu once the app is tested. -->
 
-- `Sources/CDFN/dfn.c`: DeepFilterNet3 inference, hand-ported from the official model.
-- `Sources/CDFN/pipeline.c`: real-time audio path. No allocation or locks in the audio callbacks.
-- `Sources/NoNoiseMac/main.swift`: device handling and the menu.
-- `Driver/`: the virtual mic (AudioServerPlugIn), unchanged from upstream.
-- `Resources/dfn3.weights`: official DeepFilterNet3 weights, flattened by `tools/export_weights.py`.
+Stillmic adds a microphone called **Stillmic** to your Mac. Pick it in Zoom, Meet, Slack or any other app, and they hear your voice with the keyboard, fan and street taken out. It runs the [DeepFilterNet3](https://github.com/Rikorose/DeepFilterNet) model locally, with no account and nothing sent anywhere.
+
+## Why Stillmic?
+
+- **Light:** the model is hand-ported to C with no machine learning framework. See the numbers below.
+- **Idle means idle:** audio only runs while an app is using the Stillmic mic. Otherwise it uses no CPU.
+- **Private:** audio is processed on your Mac and never stored or sent. There are no analytics.
+- **Simple:** a menu bar icon with on/off, a mode, and a mic picker.
 
 ## Install
 
-```sh
-./build-driver.sh && sudo ./install-driver.sh   # first time only; restarts coreaudiod
-./install-app.sh
-```
+1. Download [`Stillmic.dmg`](https://github.com/robin-liquidium/stillmic/releases/latest/download/Stillmic.dmg).
+2. Drag Stillmic into Applications and open it.
+3. Click the menu bar icon and choose **Install Stillmic Mic…**. macOS asks for your password, and all audio on your Mac stops for a moment.
+4. Select **Stillmic** as the microphone in your call app.
+5. Allow microphone access when macOS asks.
 
-Then pick **NoNoise Mic** as the microphone in your call app.
+**Requirements:** macOS 15 or later on Apple Silicon.
+
+Stillmic starts at login by default, because the Stillmic mic is silent while the app isn't running. You can turn that off in the menu.
 
 ## Modes
 
-**Standard** keeps the voice smoother. **Aggressive** cuts harder and uses less CPU in quiet rooms. Switch from the menu.
+| Mode | What it does |
+|---|---|
+| **Standard** | The default. Smoother voice. |
+| **Aggressive** | Cuts harder between words and uses less CPU in a quiet room, but can make your voice sound more processed. |
 
-## Checking the engine
+Switch from the menu without restarting anything. Which one sounds better varies by voice and microphone, so try both.
 
-`bench/dftract` runs the reference Rust implementation. `bench/dfn_bench.c` runs this one. `bench/gold.py` compares their output (run `dfn_bench` with `--aggressive`, which uses the reference's thresholds), which should differ by at most a few 16-bit steps. Run this after any change to `dfn.c`.
+## How light is it?
+
+Measured on one M4 Pro on battery. The live CPU figures below are percent of one core.
+
+| | Stillmic |
+|---|---|
+| CPU during a real call, Standard mode | 6.5–7.8% |
+| Memory during a real call | 14.5 MB |
+| CPU when no app is using the mic | 0.0% |
+| Latency, mic to app, including the model's 30 ms | about 80 ms |
+
+Those figures were taken before Sparkle was added, and haven't been re-measured on the signed release. Sparkle adds about 1.6 MB. macOS's own audio service (`coreaudiod`) used a further 7–9% in the same test, which Stillmic doesn't control directly. Other Macs aren't measured yet.
+
+The engine matches the official DeepFilterNet implementation to within a couple of 16-bit steps in its Aggressive mode, and that's checked by `swift test`.
+
+## Privacy and permissions
+
+Stillmic has no network code of its own. Its only network request is checking for updates through Sparkle.
+
+- **Microphone:** to read your real mic. It's only open while an app is using the Stillmic mic.
+- **Administrator password:** only to install, update or remove the virtual mic, which lives in `/Library/Audio/Plug-Ins/HAL`.
+
+## FAQ
+
+### Does it clean up other people's audio on a call?
+
+No. It only cleans your microphone.
+
+### Why does my mic go silent if I quit the app?
+
+The Stillmic mic only carries what the app gives it. Quit the app and it plays silence, never old audio. Select your normal mic if you want to stop using Stillmic.
+
+### Can I use Bluetooth earbuds as the mic?
+
+You can pick them in the menu, but this hasn't been tested much yet. Using a Bluetooth mic usually drops the earbuds into lower-quality call audio, so a built-in or USB mic will generally sound better.
+
+### How do I remove it?
+
+Choose **Uninstall Stillmic Mic…** from the menu, quit, then delete the app.
+
+<!-- release:start -->
+### Latest release: 0.1.0
+
+- First release: real-time microphone noise removal for any Mac app, running entirely on your Mac.
+- Standard and Aggressive modes, switchable from the menu bar.
+- The virtual mic installs from the menu, and audio only runs while an app is using it.
+<!-- release:end -->
+
+## Build from source
+
+```sh
+git clone https://github.com/robin-liquidium/stillmic.git
+cd stillmic
+swift test
+script/build_and_run.sh --build
+```
+
+`script/build_and_run.sh` with no flag also replaces and launches `/Applications/Stillmic.app`. Install the virtual mic from the app's menu. Release packaging and notarization are in [RELEASING.md](RELEASING.md).
+
+```
+mic -> Core Audio callback -> DeepFilterNet3 (C) -> ring buffer -> Stillmic driver -> your app
+```
 
 ## Credits
 
-[DeepFilterNet](https://github.com/Rikorose/DeepFilterNet) by Hendrik Schröter (MIT/Apache-2.0) for the model and weights. NoNoise-Mac by ivalsaraj (MIT) for the driver.
+Stillmic began as a fork of [NoNoise-Mac](https://github.com/ivalsaraj/NoNoise-Mac) by ivalsaraj, which itself grew from [MetalVoice](https://github.com/Ghostkwebb/MetalVoice) by Ghostkwebb. The idea of a menu bar app feeding a virtual mic comes from them, and the driver in `Driver/` is NoNoise-Mac's, renamed. The app and audio path have since been rewritten.
+
+Noise removal is [DeepFilterNet](https://github.com/Rikorose/DeepFilterNet) by Hendrik Schröter, using its official DeepFilterNet3 weights under the MIT license. Updates use [Sparkle](https://sparkle-project.org). Full notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Stillmic isn't affiliated with any of these projects.
+
+## License
+
+[MIT](LICENSE)
