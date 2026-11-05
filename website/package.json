@@ -8,8 +8,8 @@
     "preview": "bun run build && wrangler dev",
     "check": "bun check --no-script && astro check",
     "lint": "bun lint --no-script",
-    "fmt": "bun fmt --no-script",
-    "fmt:check": "bun fmt --check --no-script",
+    "fmt": "bun fmt --no-script && prettier --write 'src/**/*.astro'",
+    "fmt:check": "bun fmt --check --no-script && prettier --check 'src/**/*.astro'",
     "deploy": "bun run build && wrangler deploy",
     "lint:fix": "bun lint --no-script --fix"
   },
