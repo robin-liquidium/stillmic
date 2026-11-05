@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "build": 100,
+  "date": "2026-11-05",
+  "changes": [
+    "First release: real-time microphone noise removal for any Mac app, running entirely on your Mac.",
+    "Standard and Aggressive modes, switchable from the menu bar.",
+    "The virtual mic installs from the menu, and audio only runs while an app is using it."
+  ]
+}

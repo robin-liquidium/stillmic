@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to resume, or empty for a pending draft
+        type: string
+  schedule:
+    - cron: "12,32,52 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stillmic-release
+  cancel-in-progress: false
+
+jobs:
+  select:
+    if: github.repository == 'robin-liquidium/stillmic'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.select.outputs.tag }}
+    steps:
+      - id: select
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED: ${{ inputs.tag }}
+          PUSH_TAG: ${{ github.event_name == 'push' && github.ref_name || '' }}
+        run: |
+          tag="${REQUESTED:-$PUSH_TAG}"
+          if [ -z "$tag" ]; then
+            tag="$(gh api repos/robin-liquidium/stillmic/releases --jq '[.[] | select(.draft)] | first | .tag_name // empty')"
+          fi
+          if [[ -n "$tag" && ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then exit 2; fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: select
+    if: needs.select.outputs.tag != ''
+    runs-on: macos-26
+    timeout-minutes: 50
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SIGNING_IDENTITY: "Developer ID Application: Robin Obermaier (5S5288W3R7)"
+      APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      RELEASE_TAG: ${{ needs.select.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.select.outputs.tag }}
+          fetch-depth: 0
+      - name: Load signing credentials
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+        run: python3 script/ci_credentials.py
+      - run: python3 script/release.py "$RELEASE_TAG"
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+      - name: Clean up credentials
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/stillmic-signing.keychain-db" || true
+          rm -f "$RUNNER_TEMP/stillmic.p8" "$RUNNER_TEMP/stillmic.p12"
