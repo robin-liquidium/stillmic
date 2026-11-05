@@ -413,7 +413,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
 private func weightsPath() -> String? {
     Bundle.main.path(forResource: "dfn3", ofType: "weights")
-        ?? ProcessInfo.processInfo.environment["NONOISE_WEIGHTS"]
+        ?? ProcessInfo.processInfo.environment["STILLMIC_WEIGHTS"]
 }
 
 guard let path = weightsPath(), let pipeline = nn_pipeline_create(path) else {
