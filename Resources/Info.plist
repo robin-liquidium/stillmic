@@ -9,37 +9,18 @@
 	<key>CFBundleIdentifier</key>
 	<string>com.ivalsaraj.NoNoiseMac</string>
 	<key>CFBundleName</key>
-	<string>NoNoise Mac</string>
+	<string>NoNoise</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.5.1</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.ivalsaraj.NoNoiseMac</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>nonoisemac</string>
-			</array>
-		</dict>
-	</array>
+	<string>2.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>1005001</string>
+	<string>2000000</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.0</string>
 	<key>LSUIElement</key>
 	<true/>
-	<key>NSAudioCaptureUsageDescription</key>
-	<string>NoNoise Mac captures system audio so it can remove background noise from the people you hear on calls, on-device.</string>
-	<key>NSHighResolutionCapable</key>
-	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>NoNoise Mac needs access to your microphone to process audio.</string>
-	<key>SUEnableAutomaticChecks</key>
-	<true/>
-	<key>SUFeedURL</key>
-	<string>https://github.com/ivalsaraj/NoNoise-Mac/releases/download/appcast/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>qoQrd6lwz1YFyTo1yutlnpxn//XEJUjugkf1uroGZWQ=</string>
-	<key>SUScheduledCheckInterval</key>
-	<integer>86400</integer>
+	<string>NoNoise reads your microphone to remove background noise before other apps hear it.</string>
 </dict>
 </plist>

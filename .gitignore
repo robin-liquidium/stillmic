@@ -16,5 +16,4 @@ NoNoiseMic.driver/
 *.pkg
 
 # Scratch / local tooling
-test_cm
 .worktrees/
