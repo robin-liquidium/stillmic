@@ -1,4 +1,4 @@
-# Hyperoptimizing Stillmic on an M4 Pro
+# Measurements
 
 Goal: microphone noise removal only, with the lowest CPU and RAM possible on an M4 Pro. Everything else was removed.
 

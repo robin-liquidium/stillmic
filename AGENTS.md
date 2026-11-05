@@ -20,7 +20,7 @@ python3 -m unittest discover -s script/tests -p 'test_*.py'
 script/build_and_run.sh --build   # builds and signs only
 ```
 
-Measurements and what's still untested are in `docs/plans/2026-11-05-hyperoptimize.md`. Releasing is in `RELEASING.md`.
+Measurements and what's still untested are in `docs/measurements.md`. Releasing is in `RELEASING.md`.
 
 ## Website
 
