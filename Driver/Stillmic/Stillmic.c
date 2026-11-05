@@ -1,4 +1,4 @@
-// NoNoiseMic.c — "NoNoise Mic" userspace CoreAudio AudioServerPlugIn (HAL plug-in).
+// Stillmic.c — "Stillmic" userspace CoreAudio AudioServerPlugIn (HAL plug-in).
 //
 // Original implementation written against the PUBLIC AudioServerPlugIn API
 // (<CoreAudio/AudioServerPlugIn.h>). It is modeled on the structure of Apple's documented
@@ -7,8 +7,8 @@
 // and is explicitly NOT derived from BlackHole (GPL-3.0; reference reading only).
 //
 // Topology (see the plan's shared-contract table — these constants MUST match the Swift side):
-//   • Visible INPUT-only device  "NoNoise Mic"        (UID NoNoiseMic:visible:48k2ch) → apps pick this.
-//   • Hidden  OUTPUT-only device "NoNoise Mic Engine" (UID NoNoiseMic:engine:48k2ch) → the app renders here.
+//   • Visible INPUT-only device  "Stillmic"        (UID Stillmic:visible:48k2ch) → apps pick this.
+//   • Hidden  OUTPUT-only device "Stillmic Engine" (UID Stillmic:engine:48k2ch) → the app renders here.
 // Both devices share ONE loopback ring (nn_ring) and a per-device zero-timestamp clock
 // (nn_clock) anchored to a SINGLE host-time captured on the first StartIO, so the engine's
 // write sample-time axis and the mic's read sample-time axis coincide. The visible device's
@@ -31,14 +31,14 @@
 
 #pragma mark - Shared contract constants
 
-#define kPlugIn_BundleID        "com.ivalsaraj.NoNoiseMic"
-#define kManufacturerName       CFSTR("ivalsaraj")
+#define kPlugIn_BundleID        "build.robin.stillmic.driver"
+#define kManufacturerName       CFSTR("Robin Obermaier")
 
-#define kDeviceName_Mic         CFSTR("NoNoise Mic")
-#define kDeviceName_Engine      CFSTR("NoNoise Mic Engine")
-#define kDeviceUID_Mic          CFSTR("NoNoiseMic:visible:48k2ch")
-#define kDeviceUID_Engine       CFSTR("NoNoiseMic:engine:48k2ch")
-#define kModelUID               CFSTR("NoNoiseMic:model:1")
+#define kDeviceName_Mic         CFSTR("Stillmic")
+#define kDeviceName_Engine      CFSTR("Stillmic Engine")
+#define kDeviceUID_Mic          CFSTR("Stillmic:visible:48k2ch")
+#define kDeviceUID_Engine       CFSTR("Stillmic:engine:48k2ch")
+#define kModelUID               CFSTR("Stillmic:model:1")
 
 // sourceMode custom property. Use the char literal so the compiler computes the FourCharCode
 // (a hand-typed hex with a transposed digit fails SILENTLY and the A2 toggle never switches).
@@ -123,61 +123,61 @@ static void NotifyChanged(AudioObjectID obj, const AudioObjectPropertyAddress *a
 
 #pragma mark - COM plumbing (forward decls)
 
-static HRESULT  NoNoiseMic_QueryInterface(void *inDriver, REFIID inUUID, LPVOID *outInterface);
-static ULONG    NoNoiseMic_AddRef(void *inDriver);
-static ULONG    NoNoiseMic_Release(void *inDriver);
-static OSStatus NoNoiseMic_Initialize(AudioServerPlugInDriverRef inDriver, AudioServerPlugInHostRef inHost);
-static OSStatus NoNoiseMic_CreateDevice(AudioServerPlugInDriverRef inDriver, CFDictionaryRef inDescription, const AudioServerPlugInClientInfo *inClientInfo, AudioObjectID *outDeviceObjectID);
-static OSStatus NoNoiseMic_DestroyDevice(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID);
-static OSStatus NoNoiseMic_AddDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo);
-static OSStatus NoNoiseMic_RemoveDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo);
-static OSStatus NoNoiseMic_PerformDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo);
-static OSStatus NoNoiseMic_AbortDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo);
-static Boolean  NoNoiseMic_HasProperty(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress);
-static OSStatus NoNoiseMic_IsPropertySettable(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, Boolean *outIsSettable);
-static OSStatus NoNoiseMic_GetPropertyDataSize(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 *outDataSize);
-static OSStatus NoNoiseMic_GetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, UInt32 *outDataSize, void *outData);
-static OSStatus NoNoiseMic_SetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, const void *inData);
-static OSStatus NoNoiseMic_StartIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID);
-static OSStatus NoNoiseMic_StopIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID);
-static OSStatus NoNoiseMic_GetZeroTimeStamp(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, Float64 *outSampleTime, UInt64 *outHostTime, UInt64 *outSeed);
-static OSStatus NoNoiseMic_WillDoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, Boolean *outWillDo, Boolean *outWillDoInPlace);
-static OSStatus NoNoiseMic_BeginIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo);
-static OSStatus NoNoiseMic_DoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, AudioObjectID inStreamObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo, void *ioMainBuffer, void *ioSecondaryBuffer);
-static OSStatus NoNoiseMic_EndIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo);
+static HRESULT  Stillmic_QueryInterface(void *inDriver, REFIID inUUID, LPVOID *outInterface);
+static ULONG    Stillmic_AddRef(void *inDriver);
+static ULONG    Stillmic_Release(void *inDriver);
+static OSStatus Stillmic_Initialize(AudioServerPlugInDriverRef inDriver, AudioServerPlugInHostRef inHost);
+static OSStatus Stillmic_CreateDevice(AudioServerPlugInDriverRef inDriver, CFDictionaryRef inDescription, const AudioServerPlugInClientInfo *inClientInfo, AudioObjectID *outDeviceObjectID);
+static OSStatus Stillmic_DestroyDevice(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID);
+static OSStatus Stillmic_AddDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo);
+static OSStatus Stillmic_RemoveDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo);
+static OSStatus Stillmic_PerformDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo);
+static OSStatus Stillmic_AbortDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo);
+static Boolean  Stillmic_HasProperty(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress);
+static OSStatus Stillmic_IsPropertySettable(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, Boolean *outIsSettable);
+static OSStatus Stillmic_GetPropertyDataSize(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 *outDataSize);
+static OSStatus Stillmic_GetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, UInt32 *outDataSize, void *outData);
+static OSStatus Stillmic_SetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, const void *inData);
+static OSStatus Stillmic_StartIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID);
+static OSStatus Stillmic_StopIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID);
+static OSStatus Stillmic_GetZeroTimeStamp(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, Float64 *outSampleTime, UInt64 *outHostTime, UInt64 *outSeed);
+static OSStatus Stillmic_WillDoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, Boolean *outWillDo, Boolean *outWillDoInPlace);
+static OSStatus Stillmic_BeginIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo);
+static OSStatus Stillmic_DoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, AudioObjectID inStreamObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo, void *ioMainBuffer, void *ioSecondaryBuffer);
+static OSStatus Stillmic_EndIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo);
 
 static AudioServerPlugInDriverInterface gInterface = {
     NULL,
-    NoNoiseMic_QueryInterface,
-    NoNoiseMic_AddRef,
-    NoNoiseMic_Release,
-    NoNoiseMic_Initialize,
-    NoNoiseMic_CreateDevice,
-    NoNoiseMic_DestroyDevice,
-    NoNoiseMic_AddDeviceClient,
-    NoNoiseMic_RemoveDeviceClient,
-    NoNoiseMic_PerformDeviceConfigurationChange,
-    NoNoiseMic_AbortDeviceConfigurationChange,
-    NoNoiseMic_HasProperty,
-    NoNoiseMic_IsPropertySettable,
-    NoNoiseMic_GetPropertyDataSize,
-    NoNoiseMic_GetPropertyData,
-    NoNoiseMic_SetPropertyData,
-    NoNoiseMic_StartIO,
-    NoNoiseMic_StopIO,
-    NoNoiseMic_GetZeroTimeStamp,
-    NoNoiseMic_WillDoIOOperation,
-    NoNoiseMic_BeginIOOperation,
-    NoNoiseMic_DoIOOperation,
-    NoNoiseMic_EndIOOperation
+    Stillmic_QueryInterface,
+    Stillmic_AddRef,
+    Stillmic_Release,
+    Stillmic_Initialize,
+    Stillmic_CreateDevice,
+    Stillmic_DestroyDevice,
+    Stillmic_AddDeviceClient,
+    Stillmic_RemoveDeviceClient,
+    Stillmic_PerformDeviceConfigurationChange,
+    Stillmic_AbortDeviceConfigurationChange,
+    Stillmic_HasProperty,
+    Stillmic_IsPropertySettable,
+    Stillmic_GetPropertyDataSize,
+    Stillmic_GetPropertyData,
+    Stillmic_SetPropertyData,
+    Stillmic_StartIO,
+    Stillmic_StopIO,
+    Stillmic_GetZeroTimeStamp,
+    Stillmic_WillDoIOOperation,
+    Stillmic_BeginIOOperation,
+    Stillmic_DoIOOperation,
+    Stillmic_EndIOOperation
 };
 static AudioServerPlugInDriverInterface *gInterfacePtr = &gInterface;
 static AudioServerPlugInDriverRef        gDriverRef    = &gInterfacePtr;
 
 #pragma mark - Factory (referenced by Info.plist CFPlugInFactories)
 
-void *NoNoiseMic_Create(CFAllocatorRef inAllocator, CFUUIDRef inRequestedTypeUUID);
-void *NoNoiseMic_Create(CFAllocatorRef inAllocator, CFUUIDRef inRequestedTypeUUID) {
+void *Stillmic_Create(CFAllocatorRef inAllocator, CFUUIDRef inRequestedTypeUUID);
+void *Stillmic_Create(CFAllocatorRef inAllocator, CFUUIDRef inRequestedTypeUUID) {
     (void)inAllocator;
     if (inRequestedTypeUUID != NULL && CFEqual(inRequestedTypeUUID, kAudioServerPlugInTypeUUID)) {
         return gDriverRef;
@@ -187,13 +187,13 @@ void *NoNoiseMic_Create(CFAllocatorRef inAllocator, CFUUIDRef inRequestedTypeUUI
 
 #pragma mark - COM
 
-static HRESULT NoNoiseMic_QueryInterface(void *inDriver, REFIID inUUID, LPVOID *outInterface) {
+static HRESULT Stillmic_QueryInterface(void *inDriver, REFIID inUUID, LPVOID *outInterface) {
     if (inDriver != gDriverRef || outInterface == NULL) return kAudioHardwareIllegalOperationError;
     CFUUIDRef requested = CFUUIDCreateFromUUIDBytes(NULL, inUUID);
     HRESULT result = E_NOINTERFACE;
     if (CFEqual(requested, IUnknownUUID) || CFEqual(requested, kAudioServerPlugInDriverInterfaceUUID)) {
         *outInterface = gDriverRef;
-        NoNoiseMic_AddRef(inDriver);
+        Stillmic_AddRef(inDriver);
         result = S_OK;
     }
     CFRelease(requested);
@@ -201,46 +201,46 @@ static HRESULT NoNoiseMic_QueryInterface(void *inDriver, REFIID inUUID, LPVOID *
 }
 
 // Singleton — there is exactly one driver object for the lifetime of coreaudiod.
-static ULONG NoNoiseMic_AddRef(void *inDriver)  { (void)inDriver; return 1; }
-static ULONG NoNoiseMic_Release(void *inDriver) { (void)inDriver; return 1; }
+static ULONG Stillmic_AddRef(void *inDriver)  { (void)inDriver; return 1; }
+static ULONG Stillmic_Release(void *inDriver) { (void)inDriver; return 1; }
 
 #pragma mark - Lifecycle
 
-static OSStatus NoNoiseMic_Initialize(AudioServerPlugInDriverRef inDriver, AudioServerPlugInHostRef inHost) {
+static OSStatus Stillmic_Initialize(AudioServerPlugInDriverRef inDriver, AudioServerPlugInHostRef inHost) {
     if (inDriver != gDriverRef) return kAudioHardwareBadObjectError;
     gHost = inHost;
     return noErr;
 }
 
 // Static topology — devices are not created/destroyed at runtime.
-static OSStatus NoNoiseMic_CreateDevice(AudioServerPlugInDriverRef inDriver, CFDictionaryRef inDescription, const AudioServerPlugInClientInfo *inClientInfo, AudioObjectID *outDeviceObjectID) {
+static OSStatus Stillmic_CreateDevice(AudioServerPlugInDriverRef inDriver, CFDictionaryRef inDescription, const AudioServerPlugInClientInfo *inClientInfo, AudioObjectID *outDeviceObjectID) {
     (void)inDriver; (void)inDescription; (void)inClientInfo; (void)outDeviceObjectID;
     return kAudioHardwareUnsupportedOperationError;
 }
-static OSStatus NoNoiseMic_DestroyDevice(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID) {
+static OSStatus Stillmic_DestroyDevice(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID) {
     (void)inDriver; (void)inDeviceObjectID;
     return kAudioHardwareUnsupportedOperationError;
 }
-static OSStatus NoNoiseMic_AddDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo) {
+static OSStatus Stillmic_AddDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo) {
     (void)inDriver; (void)inDeviceObjectID; (void)inClientInfo;
     return noErr;
 }
-static OSStatus NoNoiseMic_RemoveDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo) {
+static OSStatus Stillmic_RemoveDeviceClient(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, const AudioServerPlugInClientInfo *inClientInfo) {
     (void)inDriver; (void)inDeviceObjectID; (void)inClientInfo;
     return noErr;
 }
-static OSStatus NoNoiseMic_PerformDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo) {
+static OSStatus Stillmic_PerformDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo) {
     (void)inDriver; (void)inDeviceObjectID; (void)inChangeAction; (void)inChangeInfo;
     return noErr;
 }
-static OSStatus NoNoiseMic_AbortDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo) {
+static OSStatus Stillmic_AbortDeviceConfigurationChange(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt64 inChangeAction, void *inChangeInfo) {
     (void)inDriver; (void)inDeviceObjectID; (void)inChangeAction; (void)inChangeInfo;
     return noErr;
 }
 
 #pragma mark - Property: size
 
-static OSStatus NoNoiseMic_GetPropertyDataSize(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 *outDataSize) {
+static OSStatus Stillmic_GetPropertyDataSize(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 *outDataSize) {
     (void)inDriver; (void)inClientProcessID; (void)inQualifierDataSize; (void)inQualifierData;
     if (inAddress == NULL || outDataSize == NULL) return kAudioHardwareIllegalOperationError;
 
@@ -336,7 +336,7 @@ static OSStatus NoNoiseMic_GetPropertyDataSize(AudioServerPlugInDriverRef inDriv
         *outDataSize = (UInt32)sizeof(CFStringRef); return noErr; \
     } while (0)
 
-static OSStatus NoNoiseMic_GetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, UInt32 *outDataSize, void *outData) {
+static OSStatus Stillmic_GetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, UInt32 *outDataSize, void *outData) {
     (void)inDriver; (void)inClientProcessID;
     if (inAddress == NULL || outDataSize == NULL || outData == NULL) return kAudioHardwareIllegalOperationError;
 
@@ -482,17 +482,17 @@ static OSStatus NoNoiseMic_GetPropertyData(AudioServerPlugInDriverRef inDriver, 
 
 #pragma mark - Property: has / settable / set
 
-static Boolean NoNoiseMic_HasProperty(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress) {
+static Boolean Stillmic_HasProperty(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress) {
     UInt32 size = 0;
     // A property exists iff we can compute its size. Size never depends on qualifier values here.
-    OSStatus err = NoNoiseMic_GetPropertyDataSize(inDriver, inObjectID, inClientProcessID, inAddress, 0, NULL, &size);
+    OSStatus err = Stillmic_GetPropertyDataSize(inDriver, inObjectID, inClientProcessID, inAddress, 0, NULL, &size);
     return err == noErr;
 }
 
-static OSStatus NoNoiseMic_IsPropertySettable(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, Boolean *outIsSettable) {
+static OSStatus Stillmic_IsPropertySettable(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, Boolean *outIsSettable) {
     if (inAddress == NULL || outIsSettable == NULL) return kAudioHardwareIllegalOperationError;
     UInt32 size = 0;
-    OSStatus err = NoNoiseMic_GetPropertyDataSize(inDriver, inObjectID, inClientProcessID, inAddress, 0, NULL, &size);
+    OSStatus err = Stillmic_GetPropertyDataSize(inDriver, inObjectID, inClientProcessID, inAddress, 0, NULL, &size);
     if (err != noErr) return err;
 
     switch (inAddress->mSelector) {
@@ -508,7 +508,7 @@ static OSStatus NoNoiseMic_IsPropertySettable(AudioServerPlugInDriverRef inDrive
     return noErr;
 }
 
-static OSStatus NoNoiseMic_SetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, const void *inData) {
+static OSStatus Stillmic_SetPropertyData(AudioServerPlugInDriverRef inDriver, AudioObjectID inObjectID, pid_t inClientProcessID, const AudioObjectPropertyAddress *inAddress, UInt32 inQualifierDataSize, const void *inQualifierData, UInt32 inDataSize, const void *inData) {
     (void)inDriver; (void)inClientProcessID; (void)inQualifierDataSize; (void)inQualifierData;
     if (inAddress == NULL || inData == NULL) return kAudioHardwareIllegalOperationError;
 
@@ -555,7 +555,7 @@ static OSStatus NoNoiseMic_SetPropertyData(AudioServerPlugInDriverRef inDriver, 
 
 #pragma mark - IO
 
-static OSStatus NoNoiseMic_StartIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID) {
+static OSStatus Stillmic_StartIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID) {
     (void)inDriver; (void)inClientID;
     if (!isDevice(inDeviceObjectID)) return kAudioHardwareBadObjectError;
 
@@ -574,7 +574,7 @@ static OSStatus NoNoiseMic_StartIO(AudioServerPlugInDriverRef inDriver, AudioObj
     return noErr;
 }
 
-static OSStatus NoNoiseMic_StopIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID) {
+static OSStatus Stillmic_StopIO(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID) {
     (void)inDriver; (void)inClientID;
     if (!isDevice(inDeviceObjectID)) return kAudioHardwareBadObjectError;
 
@@ -586,7 +586,7 @@ static OSStatus NoNoiseMic_StopIO(AudioServerPlugInDriverRef inDriver, AudioObje
     return noErr;
 }
 
-static OSStatus NoNoiseMic_GetZeroTimeStamp(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, Float64 *outSampleTime, UInt64 *outHostTime, UInt64 *outSeed) {
+static OSStatus Stillmic_GetZeroTimeStamp(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, Float64 *outSampleTime, UInt64 *outHostTime, UInt64 *outSeed) {
     (void)inDriver; (void)inClientID;
     if (!isDevice(inDeviceObjectID) || outSampleTime == NULL || outHostTime == NULL || outSeed == NULL) return kAudioHardwareIllegalOperationError;
 
@@ -602,7 +602,7 @@ static OSStatus NoNoiseMic_GetZeroTimeStamp(AudioServerPlugInDriverRef inDriver,
     return noErr;
 }
 
-static OSStatus NoNoiseMic_WillDoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, Boolean *outWillDo, Boolean *outWillDoInPlace) {
+static OSStatus Stillmic_WillDoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, Boolean *outWillDo, Boolean *outWillDoInPlace) {
     (void)inDriver; (void)inClientID;
     // Direction-specific, mirroring DoIOOperation: the mic only reads input, the engine only
     // writes its mix. (Claiming both on both devices is harmless but misrepresents the topology.)
@@ -613,14 +613,14 @@ static OSStatus NoNoiseMic_WillDoIOOperation(AudioServerPlugInDriverRef inDriver
     return noErr;
 }
 
-static OSStatus NoNoiseMic_BeginIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo) {
+static OSStatus Stillmic_BeginIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo) {
     (void)inDriver; (void)inDeviceObjectID; (void)inClientID; (void)inOperationID; (void)inIOBufferFrameSize; (void)inIOCycleInfo;
     return noErr;
 }
 
 // Real-time path: NO allocation / locks / syscalls. gRing/gSourceMode are lock-free; the shared
 // nn_clock keeps the mic read trailing the engine write on a common sample-time axis.
-static OSStatus NoNoiseMic_DoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, AudioObjectID inStreamObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo, void *ioMainBuffer, void *ioSecondaryBuffer) {
+static OSStatus Stillmic_DoIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, AudioObjectID inStreamObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo, void *ioMainBuffer, void *ioSecondaryBuffer) {
     (void)inDriver; (void)inStreamObjectID; (void)inClientID; (void)ioSecondaryBuffer;
     if (ioMainBuffer == NULL || inIOCycleInfo == NULL) return noErr;
 
@@ -646,7 +646,7 @@ static OSStatus NoNoiseMic_DoIOOperation(AudioServerPlugInDriverRef inDriver, Au
     return noErr;
 }
 
-static OSStatus NoNoiseMic_EndIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo) {
+static OSStatus Stillmic_EndIOOperation(AudioServerPlugInDriverRef inDriver, AudioObjectID inDeviceObjectID, UInt32 inClientID, UInt32 inOperationID, UInt32 inIOBufferFrameSize, const AudioServerPlugInIOCycleInfo *inIOCycleInfo) {
     (void)inDriver; (void)inDeviceObjectID; (void)inClientID; (void)inOperationID; (void)inIOBufferFrameSize; (void)inIOCycleInfo;
     return noErr;
 }

@@ -1,4 +1,4 @@
-// Real-time path: physical mic -> DeepFilterNet3 -> NoNoise Mic driver.
+// Real-time path: physical mic -> DeepFilterNet3 -> Stillmic driver.
 #ifndef NN_PIPELINE_H
 #define NN_PIPELINE_H
 

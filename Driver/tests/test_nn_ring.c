@@ -1,4 +1,4 @@
-#include "../NoNoiseMic/nn_ring.h"
+#include "../Stillmic/nn_ring.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

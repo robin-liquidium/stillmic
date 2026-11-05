@@ -1,4 +1,4 @@
-#include "../NoNoiseMic/nn_clock.h"
+#include "../Stillmic/nn_clock.h"
 #include <stdio.h>
 
 static int failures = 0;

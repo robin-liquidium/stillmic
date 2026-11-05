@@ -1,6 +1,6 @@
 import sys,numpy as np,wave
 p=sys.argv[1]
-a=np.fromfile(p+'_nonoise.f32','<f4');r=np.fromfile(p+'_raw.f32','<f4')
+a=np.fromfile(p+'_stillmic.f32','<f4');r=np.fromfile(p+'_raw.f32','<f4')
 w=wave.open(sys.argv[2],'wb');w.setnchannels(1);w.setsampwidth(2);w.setframerate(48000);w.writeframes((np.clip(r,-1,1)*32767).astype('<i2').tobytes());w.close()
 off=len(a)-len(r);a=a[off:];n=min(len(a),len(r));a,r=a[:n],r[:n]
 N=1<<20;c=np.fft.irfft(np.fft.rfft(a,N)*np.conj(np.fft.rfft(r,N)),N);lag=int(np.argmax(np.abs(c)))

@@ -1,4 +1,4 @@
-// mictest <seconds> <out prefix>: records NoNoise Mic and the built-in mic at once, as raw float32.
+// mictest <seconds> <out prefix>: records Stillmic and the built-in mic at once, as raw float32.
 import CoreAudio
 import Foundation
 func addr(_ s: AudioObjectPropertySelector) -> AudioObjectPropertyAddress { AudioObjectPropertyAddress(mSelector: s, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain) }
@@ -7,7 +7,7 @@ func dev(_ uid: String) -> AudioObjectID { var a = addr(kAudioHardwarePropertyTr
 final class Rec { var b = [Float](); let ch: Int; init(ch: Int) { self.ch = ch; b.reserveCapacity(48000 * 120) } }
 let secs = Double(CommandLine.arguments[1])!; let prefix = CommandLine.arguments[2]
 var running: [(AudioObjectID, AudioDeviceIOProcID, Rec, String)] = []
-for (name, uid, ch) in [("nonoise", "NoNoiseMic:visible:48k2ch", 2), ("raw", "BuiltInMicrophoneDevice", 1)] {
+for (name, uid, ch) in [("stillmic", "Stillmic:visible:48k2ch", 2), ("raw", "BuiltInMicrophoneDevice", 1)] {
   let d = dev(uid); let r = Rec(ch: ch); var pid: AudioDeviceIOProcID?
   let ctx = Unmanaged.passRetained(r).toOpaque()
   let st = AudioDeviceCreateIOProcID(d, { _, _, inp, _, _, _, c in

@@ -1,38 +1,20 @@
-# NoNoise Mic — AudioServerPlugIn driver
+# Stillmic Mic driver
 
-`NoNoiseMic.driver` is a userspace CoreAudio HAL plug-in (an **AudioServerPlugIn** that runs
-inside `coreaudiod`). It is an **original implementation** written against the public
-`<CoreAudio/AudioServerPlugIn.h>` API. Its structure follows Apple's documented
-"Creating an Audio Server Driver Plug-in" sample (NullAudio) for API-usage patterns **only** —
-no Apple sample source is copied — so it ships under this project's **MIT license**. It is
-**NOT** derived from BlackHole (GPL-3.0); BlackHole was reference reading only.
+`Stillmic.driver` is a userspace Core Audio plug-in (an AudioServerPlugIn that runs inside `coreaudiod`). It came from [NoNoise-Mac](https://github.com/ivalsaraj/NoNoise-Mac), where it was written against Apple's public `AudioServerPlugIn.h` API, and is MIT licensed. Stillmic renames it so both can be installed together.
 
-## Topology
-- **NoNoise Mic** — visible, input-only device (UID `NoNoiseMic:visible:48k2ch`). Apps (Slack/
-  Zoom/Meet/OBS) select this as their microphone.
-- **NoNoise Mic Engine** — hidden, output-only device (UID `NoNoiseMic:engine:48k2ch`). The
-  NoNoise Mac app renders cleaned audio here; it never appears in user-facing pickers and is
-  not default-eligible.
+## Devices
 
-Both devices share ONE loopback ring (`nn_ring`) plus a per-device zero-timestamp clock
-(`nn_clock`) anchored to a single host time. Audio is 48 kHz, 2ch, **interleaved** Float32.
-The visible device's `sourceMode` (`'srcm'`) property selects loopback (`0`, default) vs the
-A2 shared-memory/XPC path (`1`).
+- **Stillmic**: visible, input only (UID `Stillmic:visible:48k2ch`). Apps select this as their microphone.
+- **Stillmic Engine**: hidden, output only (UID `Stillmic:engine:48k2ch`). The app writes cleaned audio here.
 
-The ring serves **silence, never stale speech**: it tracks a `writeEnd` watermark and zeroes any
-frame the engine hasn't produced (or that has been overwritten by a wrap). So if the app stops
-rendering while an app is still capturing "NoNoise Mic", the call hears silence — not a loop of
-your last sentence.
+Both share one loopback ring (`nn_ring`) and a per-device zero-timestamp clock (`nn_clock`) anchored to one host time. Audio is 48 kHz, stereo, interleaved Float32. The UIDs must match `Sources/Stillmic/main.swift`.
 
-## Pure, host-tested math
-The risky index math lives in CoreAudio-free C and is unit-tested without a device:
-`Driver/NoNoiseMic/nn_ring.{c,h}`, `nn_clock.{c,h}` → `Driver/tests/run-tests.sh` (covers
-wraparound, zero-timestamp jumps, and the read-before-write / writer-stopped silence guarantees).
+The ring returns silence for anything the app hasn't written, so a stopped app can't replay old speech.
 
-## Build / install / uninstall
-```bash
-../build-driver.sh                 # compile + ad-hoc sign NoNoiseMic.driver
-sudo ../install-driver.sh          # copy to /Library/Audio/Plug-Ins/HAL, restart coreaudiod, verify
-sudo ../uninstall-driver.sh        # remove + restart coreaudiod
-```
-Installing restarts `coreaudiod`, so **all** audio drops for a moment.
+## Tests
+
+`Driver/tests/run-tests.sh` tests the ring and clock math without any audio device.
+
+## Installing
+
+The app bundles the driver and installs it from its menu. Installing restarts `coreaudiod`, so all audio on the Mac stops for a moment. Change `CFBundleVersion` in `Stillmic/Info.plist` when the driver changes, so the app offers the update.
