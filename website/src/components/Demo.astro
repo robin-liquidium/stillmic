@@ -1,0 +1,239 @@
+---
+import demo from '../data/demo.json';
+const bars = demo.original.map((value, i) => ({
+  original: value,
+  stillmic: demo.stillmic[i],
+}));
+const duration = `0:${String(Math.round(demo.seconds)).padStart(2, '0')}`;
+---
+
+<section
+  id="listen"
+  class="demo is-on"
+  aria-label="Listen to Stillmic"
+  data-seconds={demo.seconds}
+>
+  <div class="demo-top">
+    <button class="play" type="button" aria-label="Play" data-play>
+      <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 5.6v12.8a.8.8 0 0 0 1.2.7l10.3-6.4a.8.8 0 0 0 0-1.4L9.2 4.9A.8.8 0 0 0 8 5.6Z"></path>
+      </svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="6.5" y="5" width="4" height="14" rx="1.2"></rect>
+        <rect x="13.5" y="5" width="4" height="14" rx="1.2"></rect>
+      </svg>
+    </button>
+    <div class="demo-title">
+      <strong data-state>Noise removed</strong>
+      <span>
+        <span data-time>0:00</span> / {duration}
+      </span>
+    </div>
+    <button
+      class="switch"
+      type="button"
+      role="switch"
+      aria-checked="true"
+      aria-label="Stillmic noise removal"
+      data-switch
+    >
+      <span class="switch-label">Stillmic</span>
+      <span class="switch-track">
+        <span class="switch-thumb"></span>
+      </span>
+    </button>
+  </div>
+  <div
+    class="wave"
+    data-wave
+    role="slider"
+    tabindex="0"
+    aria-label="Seek"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="0"
+  >
+    {bars.map((bar) => (
+      <i style={`--o:${bar.original};--s:${bar.stillmic}`} />
+    ))}
+    <span class="playhead" data-playhead></span>
+  </div>
+  <p class="demo-note">
+    The real Stillmic engine, flipped live. An AI voice with fan and keyboard
+    noise added, at matched levels. Use headphones if you can.
+  </p>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('.demo');
+  if (root) {
+    const duration = Number(root.dataset.seconds);
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-play]')!;
+    const toggle = root.querySelector<HTMLButtonElement>('[data-switch]')!;
+    const wave = root.querySelector<HTMLElement>('[data-wave]')!;
+    const head = root.querySelector<HTMLElement>('[data-playhead]')!;
+    const time = root.querySelector<HTMLElement>('[data-time]')!;
+    const state = root.querySelector<HTMLElement>('[data-state]')!;
+    const bars = [...wave.querySelectorAll('i')];
+
+    let ctx: AudioContext | undefined;
+    let buffers: AudioBuffer[] | undefined;
+    let sources: AudioBufferSourceNode[] = [];
+    let gains: GainNode[] = [];
+    let startedAt = 0;
+    let offset = 0;
+    let playing = false;
+    let on = true;
+    let lastBar = -1;
+    let frame = 0;
+
+    const clock = (s: number) =>
+      `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+    function paint(position: number) {
+      const ratio = position / duration;
+      head.style.left = `${ratio * 100}%`;
+      time.textContent = clock(position);
+      wave.setAttribute('aria-valuenow', String(Math.round(ratio * 100)));
+      const current = Math.floor(ratio * bars.length);
+      if (current === lastBar) return;
+      bars.forEach((bar, i) => {
+        bar.classList.toggle('played', i < current);
+      });
+      lastBar = current;
+    }
+
+    function position() {
+      if (!playing || !ctx) return offset;
+      return (offset + ctx.currentTime - startedAt) % duration;
+    }
+
+    function tick() {
+      paint(position());
+      if (playing) frame = requestAnimationFrame(tick);
+    }
+
+    function setMode(next: boolean) {
+      on = next;
+      root!.classList.toggle('is-on', on);
+      toggle.setAttribute('aria-checked', String(on));
+      state.textContent = on ? 'Noise removed' : 'Original mic';
+      if (ctx && gains.length) {
+        const now = ctx.currentTime;
+        gains[0].gain.setTargetAtTime(on ? 0 : 1, now, 0.012);
+        gains[1].gain.setTargetAtTime(on ? 1 : 0, now, 0.012);
+      }
+    }
+
+    async function load() {
+      if (buffers) return;
+      ctx = new AudioContext();
+      buffers = await Promise.all(
+        ['original', 'stillmic'].map(async (name) => {
+          const response = await fetch(`/demo/${name}.m4a`);
+          return ctx!.decodeAudioData(await response.arrayBuffer());
+        }),
+      );
+    }
+
+    function stopSources() {
+      for (const source of sources) {
+        source.onended = null;
+        source.stop();
+        source.disconnect();
+      }
+      for (const gain of gains) gain.disconnect();
+      sources = [];
+      gains = [];
+    }
+
+    function start(from: number) {
+      const when = ctx!.currentTime + 0.03;
+      gains = [0, 1].map((i) => {
+        const gain = ctx!.createGain();
+        gain.gain.value = (i === 1) === on ? 1 : 0;
+        gain.connect(ctx!.destination);
+        return gain;
+      });
+      sources = buffers!.map((buffer, i) => {
+        const source = ctx!.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        source.connect(gains[i]);
+        source.start(when, from);
+        return source;
+      });
+      offset = from;
+      startedAt = when;
+    }
+
+    async function setPlaying(next: boolean) {
+      if (next) {
+        root!.classList.add('is-loading');
+        try {
+          await load();
+          await ctx!.resume();
+          start(offset);
+        } catch {
+          state.textContent = 'Audio couldn’t load';
+          return;
+        } finally {
+          root!.classList.remove('is-loading');
+        }
+        playing = true;
+        root!.classList.add('is-playing');
+        playBtn.setAttribute('aria-label', 'Pause');
+        cancelAnimationFrame(frame);
+        tick();
+      } else {
+        offset = position();
+        playing = false;
+        stopSources();
+        root!.classList.remove('is-playing');
+        playBtn.setAttribute('aria-label', 'Play');
+        paint(offset);
+      }
+    }
+
+    function seek(ratio: number) {
+      const to = Math.min(Math.max(ratio, 0), 0.999) * duration;
+      if (playing) {
+        stopSources();
+        start(to);
+      } else {
+        offset = to;
+        paint(to);
+      }
+    }
+
+    playBtn.addEventListener('click', () => setPlaying(!playing));
+    toggle.addEventListener('click', () => setMode(!on));
+    wave.addEventListener('click', (event) => {
+      const box = wave.getBoundingClientRect();
+      seek((event.clientX - box.left) / box.width);
+    });
+    wave.addEventListener('keydown', (event) => {
+      const step =
+        event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      seek((position() + step) / duration);
+    });
+
+    // The first thing the page shows: the noise settling once it comes into view.
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setMode(false);
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (!entries[0].isIntersecting) return;
+          observer.disconnect();
+          setTimeout(() => {
+            if (!playing && !on) setMode(true);
+          }, 900);
+        },
+        { threshold: 0.55 },
+      );
+      observer.observe(wave);
+    }
+  }
+</script>

@@ -1,0 +1,29 @@
+---
+import demo from '../data/demo.json';
+const slice = (values: number[]) => values.slice(4, 24);
+const noisy = slice(demo.original);
+const clean = slice(demo.stillmic);
+---
+
+<div class="flow" aria-hidden="true">
+  <div class="flow-side">
+    <div class="flow-bars noisy">
+      {noisy.map((value) => (
+        <i style={`--v:${value}`} />
+      ))}
+    </div>
+    <span>Your mic</span>
+  </div>
+  <div class="flow-core">
+    <img src="/icon.png" width="72" height="72" alt="" />
+    <span>Stillmic</span>
+  </div>
+  <div class="flow-side">
+    <div class="flow-bars clean">
+      {clean.map((value) => (
+        <i style={`--v:${value}`} />
+      ))}
+    </div>
+    <span>Zoom, Meet, Slack…</span>
+  </div>
+</div>

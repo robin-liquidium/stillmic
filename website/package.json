@@ -1,0 +1,26 @@
+{
+  "name": "stillmic-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "bun run build && wrangler dev",
+    "check": "astro check",
+    "lint": "biome lint .",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check .",
+    "deploy": "bun run build && wrangler deploy"
+  },
+  "dependencies": {
+    "astro": "7.3.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@biomejs/biome": "2.5.13",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "1.0.0",
+    "typescript": "6",
+    "wrangler": "4.154.0"
+  }
+}

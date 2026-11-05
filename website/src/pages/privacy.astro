@@ -1,0 +1,41 @@
+---
+import Page from '../layouts/Page.astro';
+---
+
+<Page
+  title="Privacy · Stillmic"
+  description="What Stillmic does with your data."
+>
+  <main id="main" class="prose">
+    <h1>Privacy</h1>
+    <p>
+      Stillmic processes your microphone on your Mac. Your audio is never stored
+      and never sent anywhere. There is no account and there are no analytics.
+    </p>
+    <h2>Microphone</h2>
+    <p>
+      Stillmic reads your real microphone only while another app is using the
+      Stillmic mic.
+    </p>
+    <h2>Network</h2>
+    <p>
+      The app’s only network request is checking for updates, using
+      <a href="https://sparkle-project.org">Sparkle</a>. That request goes to
+      GitHub, which sees your IP address as it would for any download.
+    </p>
+    <h2>This website</h2>
+    <p>
+      This site has no cookies and no analytics. It runs on Cloudflare, which
+      handles requests as its infrastructure provider. The demo audio on the
+      home page only loads when you press play.
+    </p>
+    <h2>Contact</h2>
+    <p>
+      Questions go to
+      <a href="https://github.com/robin-liquidium/stillmic/issues">
+        GitHub issues
+      </a>
+      .
+    </p>
+  </main>
+</Page>

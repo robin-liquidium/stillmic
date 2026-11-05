@@ -1,0 +1,160 @@
+---
+import Demo from '../components/Demo.astro';
+import DownloadIcon from '../components/DownloadIcon.astro';
+import Flow from '../components/Flow.astro';
+import Page from '../layouts/Page.astro';
+import release from '../../../release.json';
+
+const stats = [
+  { value: '~7%', label: 'of one CPU core, during a real call' },
+  { value: '~16 MB', label: 'of memory while you talk' },
+  { value: '0%', label: 'CPU when no app is using the mic' },
+  { value: '0 bytes', label: 'of your audio leave your Mac' },
+];
+
+const features = [
+  {
+    tag: '01 / Everywhere',
+    title: 'Works in every app.',
+    text: 'Zoom, Meet, Slack, Discord, your browser. If an app lets you choose a microphone, Stillmic works there.',
+  },
+  {
+    tag: '02 / Private',
+    title: 'Stays on your Mac.',
+    text: 'Your voice is cleaned on your Mac and never stored or sent anywhere. No account and no analytics.',
+  },
+  {
+    tag: '03 / Idle',
+    title: 'Idle means idle.',
+    text: 'Stillmic only runs while an app is using it. The rest of the day it uses no CPU and your real mic stays closed.',
+  },
+  {
+    tag: '04 / Modes',
+    title: 'Two strengths.',
+    text: 'Standard keeps your voice smooth. Aggressive cuts harder between words. Switch from the menu bar at any time.',
+  },
+];
+
+const faq = [
+  {
+    q: 'Does it clean up other people on the call?',
+    a: 'No. Stillmic only cleans your microphone.',
+  },
+  {
+    q: 'Why does it ask for my password?',
+    a: 'Once, to install the virtual microphone, which macOS keeps in a system folder. All audio on your Mac stops for a moment while it loads.',
+  },
+  {
+    q: 'What happens if I quit the app?',
+    a: 'The Stillmic mic goes silent, so it never plays old audio. Pick your normal mic to stop using it, or leave Start at Login on.',
+  },
+  {
+    q: 'Can I use Bluetooth earbuds as the mic?',
+    a: 'You can, but Bluetooth mics usually drop your earbuds into lower-quality call audio. A built-in or USB mic generally sounds better.',
+  },
+  {
+    q: 'What’s it built on?',
+    a: 'DeepFilterNet3, an open-source speech model, hand-ported to C so it runs with no machine learning framework. The code is on GitHub under the MIT license.',
+  },
+];
+---
+
+<Page>
+  <main id="main">
+    <section class="hero">
+      <div class="eyebrow">
+        <span class="dot"></span> Noise removal for your Mac’s mic
+      </div>
+      <h1>
+        Just your <em>voice.</em>
+      </h1>
+      <p class="intro">
+        Stillmic takes the fan, the keyboard and the street
+        <br class="desktop" /> out of your microphone, in every app, right on
+        your Mac.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="/download">
+          <DownloadIcon />
+          Download for Mac
+        </a>
+        <a class="text-link" href="#listen">
+          Hear the difference <span aria-hidden="true">↓</span>
+        </a>
+      </div>
+      <p class="small">
+        Free & open source · macOS 15+ · Apple silicon · v{release.version}
+      </p>
+      <Demo />
+    </section>
+
+    <section class="stats" aria-label="How light it is">
+      <div class="section-heading">
+        <span class="eyebrow">How light it is</span>
+        <h2>
+          Light enough to <em>forget about.</em>
+        </h2>
+      </div>
+      <dl>
+        {stats.map((stat) => (
+          <div>
+            <dt>{stat.label}</dt>
+            <dd>{stat.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p class="small">
+        Measured on an M4 Pro. Yours will vary with your Mac and how much you
+        talk. macOS’s own audio service uses some CPU on top.
+      </p>
+    </section>
+
+    <section class="how">
+      <div class="section-heading center">
+        <span class="eyebrow">How it works</span>
+        <h2>
+          Pick it like <em>any other mic.</em>
+        </h2>
+        <p>
+          Stillmic adds a microphone to your Mac. Choose it in your call app and
+          everyone hears the clean version.
+        </p>
+      </div>
+      <Flow />
+    </section>
+
+    <section class="features">
+      {features.map((feature) => (
+        <article>
+          <span class="feature-number">{feature.tag}</span>
+          <h3>{feature.title}</h3>
+          <p>{feature.text}</p>
+        </article>
+      ))}
+    </section>
+
+    <section class="faq">
+      <h2>Questions.</h2>
+      <div>
+        {faq.map((item) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <section class="install">
+      <h2>
+        Take the noise <br />
+        <em>out of the call.</em>
+      </h2>
+      <a class="button primary" href="/download">
+        <DownloadIcon />
+        Download Stillmic
+      </a>
+      <p class="small">No account. No analytics. Just your voice.</p>
+    </section>
+  </main>
+</Page>

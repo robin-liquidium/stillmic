@@ -1,0 +1,21 @@
+---
+import Page from '../layouts/Page.astro';
+import release from '../../../release.json';
+---
+
+<Page title="Changelog · Stillmic" description="What’s new in Stillmic.">
+  <main id="main" class="prose">
+    <h1>Changelog</h1>
+    <section class="release">
+      <div class="release-heading">
+        <h2>{release.version}</h2>
+        <time datetime={release.date}>{release.date}</time>
+      </div>
+      <ul>
+        {release.changes.map((change) => (
+          <li>{change}</li>
+        ))}
+      </ul>
+    </section>
+  </main>
+</Page>
