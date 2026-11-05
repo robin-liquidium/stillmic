@@ -2,9 +2,14 @@ import AppKit
 import CDFN
 import CoreAudio
 import ServiceManagement
+import Sparkle
 
-private let visibleUID = "NoNoiseMic:visible:48k2ch"
-private let engineUID = "NoNoiseMic:engine:48k2ch"
+private let visibleUID = "Stillmic:visible:48k2ch"
+private let engineUID = "Stillmic:engine:48k2ch"
+private let installedDriver = "/Library/Audio/Plug-Ins/HAL/Stillmic.driver"
+
+// `--no-audio` shows the menu without touching audio devices or login items, for UI and memory checks.
+private let noAudio = CommandLine.arguments.contains("--no-audio")
 
 // MARK: - Core Audio helpers
 
@@ -58,7 +63,7 @@ private func inputDevices() -> [Mic] {
         var transport: UInt32 = 0
         var n = UInt32(MemoryLayout<UInt32>.size)
         AudioObjectGetPropertyData(id, &t, 0, nil, &n, &transport)
-        // Aggregates can contain NoNoise Mic, which would feed the output back into the input.
+        // Aggregates can contain Stillmic, which would feed the output back into the input.
         if transport == kAudioDeviceTransportTypeAggregate || transport == kAudioDeviceTransportTypeVirtual { return nil }
         return Mic(id: id, uid: uid, name: name, builtIn: transport == kAudioDeviceTransportTypeBuiltIn)
     }
@@ -77,6 +82,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let defaults = UserDefaults.standard
     private let pipeline: OpaquePointer
     private var statusItem: NSStatusItem!
+    private var updater: SPUStandardUpdaterController?
 
     private var visible = AudioObjectID(0)
     private var activeMic: Mic?
@@ -108,8 +114,12 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.delegate = self
         statusItem.menu = menu
+        if !CommandLine.arguments.contains("--no-updater") {
+            updater = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        }
+        if noAudio { return updateIcon() }
 
-        // NoNoise Mic is silent while this app isn't running, and idling costs nothing, so start at
+        // Stillmic is silent while this app isn't running, and idling costs nothing, so start at
         // login by default. Done once, so turning it off in the menu sticks.
         if defaults.object(forKey: "loginConfigured") == nil {
             defaults.set(true, forKey: "loginConfigured")
@@ -144,8 +154,6 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Picks up driver installs and mics coming and going.
     private func refreshDevices() {
-        // `--no-audio` shows the menu without touching audio devices, for UI and memory checks.
-        if CommandLine.arguments.contains("--no-audio") { return updateIcon() }
         let id = device(uid: visibleUID)
         if id != visible {
             var a = address(kAudioDevicePropertyDeviceIsRunningSomewhere)
@@ -171,7 +179,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return mics.first(where: \.builtIn) ?? mics.first
     }
 
-    /// Audio runs only while an app is reading NoNoise Mic.
+    /// Audio runs only while an app is reading Stillmic.
     private func sync() {
         let wanted = visible != 0 && isRunningSomewhere(visible) ? preferredMic() : nil
         let engine = wanted == nil ? 0 : device(uid: engineUID)
@@ -233,7 +241,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func updateIcon() {
         guard let button = statusItem.button else { return }
         let name = enabled ? "waveform" : "waveform.slash"
-        button.image = NSImage(systemSymbolName: name, accessibilityDescription: "NoNoise")
+        button.image = NSImage(systemSymbolName: name, accessibilityDescription: "Stillmic")
         button.appearsDisabled = activeMic == nil
     }
 
@@ -283,14 +291,89 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(login)
 
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit NoNoise", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        addDriverItems(to: menu)
+        if let updater {
+            let check = NSMenuItem(title: "Check for Updates…",
+                                   action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
+            check.target = updater
+            menu.addItem(check)
+        }
+
+        menu.addItem(.separator())
+        menu.addItem(NSMenuItem(title: "Quit Stillmic", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
     }
 
     private func statusText() -> String {
-        if visible == 0 { return "NoNoise Mic driver not installed" }
+        if visible == 0 { return "Stillmic Mic is not installed" }
         if failed { return "Could not start audio" }
         if let activeMic { return (enabled ? "Cleaning " : "Passing through ") + activeMic.name }
-        return "Idle: no app is using NoNoise Mic"
+        return "Idle: no app is using Stillmic"
+    }
+
+    // MARK: Virtual mic
+
+    private func driverVersion(at url: URL) -> String? {
+        let plist = url.appendingPathComponent("Contents/Info.plist")
+        return NSDictionary(contentsOf: plist)?["CFBundleVersion"] as? String
+    }
+
+    private func addDriverItems(to menu: NSMenu) {
+        let installed = driverVersion(at: URL(fileURLWithPath: installedDriver))
+        let bundled = Bundle.main.url(forResource: "Stillmic", withExtension: "driver").flatMap(driverVersion(at:))
+        if bundled != nil, installed == nil || installed != bundled {
+            let title = installed == nil ? "Install Stillmic Mic…" : "Update Stillmic Mic…"
+            let item = NSMenuItem(title: title, action: #selector(installDriver), keyEquivalent: "")
+            item.target = self
+            menu.addItem(item)
+        }
+        if installed != nil {
+            let item = NSMenuItem(title: "Uninstall Stillmic Mic…", action: #selector(uninstallDriver), keyEquivalent: "")
+            item.target = self
+            menu.addItem(item)
+        }
+    }
+
+    @objc private func installDriver() {
+        guard let source = Bundle.main.url(forResource: "Stillmic", withExtension: "driver")?.path else { return }
+        guard confirm("Install Stillmic Mic?", action: "Install") else { return }
+        let hal = (installedDriver as NSString).deletingLastPathComponent
+        let dest = shellQuote(installedDriver)
+        runPrivileged("/bin/mkdir -p \(shellQuote(hal)) && /bin/rm -rf \(dest) && /usr/bin/ditto \(shellQuote(source)) \(dest)"
+            + " && /usr/sbin/chown -R root:wheel \(dest) && (/usr/bin/xattr -dr com.apple.quarantine \(dest) || true)"
+            + " && (/usr/bin/killall coreaudiod || true)")
+    }
+
+    @objc private func uninstallDriver() {
+        guard confirm("Uninstall Stillmic Mic?", action: "Uninstall") else { return }
+        runPrivileged("/bin/rm -rf \(shellQuote(installedDriver)) && (/usr/bin/killall coreaudiod || true)")
+    }
+
+    private func confirm(_ title: String, action: String) -> Bool {
+        NSApp.activate(ignoringOtherApps: true)
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = "macOS asks for your password, and all audio on this Mac stops for a moment, "
+            + "including any call in progress."
+        alert.addButton(withTitle: action)
+        alert.addButton(withTitle: "Cancel")
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
+    private func shellQuote(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+
+    private func runPrivileged(_ command: String) {
+        let escaped = command.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+        var error: NSDictionary?
+        NSAppleScript(source: "do shell script \"\(escaped)\" with administrator privileges")?.executeAndReturnError(&error)
+        // -128 means the person cancelled the password prompt.
+        if let error, (error[NSAppleScript.errorNumber] as? Int) != -128 {
+            let alert = NSAlert()
+            alert.messageText = "That didn't work"
+            alert.informativeText = error[NSAppleScript.errorMessage] as? String ?? "Unknown error"
+            alert.runModal()
+        }
     }
 
     @objc private func toggleEnabled() {
@@ -314,7 +397,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
         do {
             if service.status == .enabled { try service.unregister() } else { try service.register() }
         } catch {
-            NSLog("NoNoise: login item change failed: %@", error.localizedDescription)
+            NSLog("Stillmic: login item change failed: %@", error.localizedDescription)
         }
     }
 }
@@ -327,7 +410,7 @@ private func weightsPath() -> String? {
 }
 
 guard let path = weightsPath(), let pipeline = nn_pipeline_create(path) else {
-    fputs("NoNoise: could not load dfn3.weights\n", stderr)
+    fputs("Stillmic: could not load dfn3.weights\n", stderr)
     exit(1)
 }
 
@@ -337,7 +420,7 @@ if let i = CommandLine.arguments.firstIndex(of: "--capture-only") {
     let mics = inputDevices()
     guard let mic = mics.first(where: \.builtIn) ?? mics.first,
           nn_pipeline_start(pipeline, mic.id, 0) == noErr else {
-        fputs("NoNoise: could not start capture\n", stderr)
+        fputs("Stillmic: could not start capture\n", stderr)
         exit(1)
     }
     func cpuSeconds() -> Double {

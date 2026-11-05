@@ -1,19 +1,19 @@
+# macOS
 .DS_Store
-/.build
-/Packages
-/*.xcodeproj
-/*.xcworkspace
-xcuserdata/
-derivedData/
+.AppleDouble
+.LSOverride
+
+# SwiftPM and release output
+.build/
+dist/
 .swiftpm/
-configuration/registries/
+xcuserdata/
+*.xcodeproj/
+*.xcworkspace/
 
-# Build outputs / artifacts
-NoNoiseMac.app/
-NoNoiseMacCLI
-NoNoiseMic.driver/
-*.zip
-*.pkg
-
-# Scratch / local tooling
-.worktrees/
+# Local credentials and caches
+*.log
+*.p8
+*.p12
+*.pem
+__pycache__/

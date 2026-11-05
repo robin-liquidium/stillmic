@@ -2,16 +2,20 @@
 import PackageDescription
 
 let package = Package(
-    name: "NoNoiseMac",
+    name: "Stillmic",
     platforms: [.macOS("15.0")],
-    products: [.executable(name: "NoNoiseMac", targets: ["NoNoiseMac"])],
+    products: [.executable(name: "Stillmic", targets: ["Stillmic"])],
+    dependencies: [
+        .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.10.0"),
+    ],
     targets: [
         .target(
             name: "CDFN",
             path: "Sources/CDFN",
             cSettings: [
                 .define("ACCELERATE_NEW_LAPACK"),
-                .unsafeFlags(["-O3", "-mcpu=apple-m4", "-ffp-contract=fast"], .when(configuration: .release)),
+                // Baseline for all Apple Silicon, so releases run on every M-series Mac.
+                .unsafeFlags(["-O3", "-mcpu=apple-m1", "-ffp-contract=fast"], .when(configuration: .release)),
             ],
             linkerSettings: [
                 .linkedFramework("Accelerate"),
@@ -20,10 +24,19 @@ let package = Package(
             ]
         ),
         .executableTarget(
-            name: "NoNoiseMac",
+            name: "Stillmic",
+            dependencies: ["CDFN", .product(name: "Sparkle", package: "Sparkle")],
+            path: "Sources/Stillmic",
+            linkerSettings: [
+                .linkedFramework("ServiceManagement"),
+                .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"]),
+            ]
+        ),
+        .testTarget(
+            name: "CDFNTests",
             dependencies: ["CDFN"],
-            path: "Sources/NoNoiseMac",
-            linkerSettings: [.linkedFramework("ServiceManagement")]
+            path: "Tests/CDFNTests",
+            exclude: ["Fixtures"]
         ),
     ]
 )
