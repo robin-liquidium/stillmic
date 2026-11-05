@@ -1,7 +1,0 @@
-dist
-.astro
-.wrangler
-node_modules
-bun.lock
-src/data/demo.json
-public/demo

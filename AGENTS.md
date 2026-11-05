@@ -24,4 +24,6 @@ Measurements and what's still untested are in `docs/measurements.md`. Releasing 
 
 ## Website
 
-`website/` is an Astro site on a Cloudflare Worker. In that folder, run `bun lint`, `bun check`, `bun fmt:check` and `bun run build` before deploying with `bun run deploy`. It reads the version from `release.json`, so redeploy after a release. `src/data/demo.json` and `public/demo/` come from the real engine and shouldn't be edited by hand. Measurements are in `docs/measurements.md`.
+`website/` is an Astro site on a Cloudflare Worker. In that folder, run `bun run lint`, `bun run check`, `bun run fmt:check` and `bun run build` before deploying with `bun run deploy`. It reads the version from `release.json`, so redeploy after a release. `src/data/demo.json` and `public/demo/` come from the real engine and shouldn't be edited by hand. Measurements are in `docs/measurements.md`.
+
+Package scripts there run the Bun canary pinned in `package.json`, which `bun lint` needs. Prettier stays only for `.astro` files, which `bun fmt` hands to it.
