@@ -1,143 +1,131 @@
 ---
-import Demo from '../components/Demo.astro';
-import DownloadIcon from '@robin-build/landing-kit/components/DownloadIcon.astro';
+import Closing from '@robin-build/landing-kit/components/Closing.astro';
+import Facts from '@robin-build/landing-kit/components/Facts.astro';
 import Faq from '@robin-build/landing-kit/components/Faq.astro';
-import Features from '@robin-build/landing-kit/components/Features.astro';
-import Stats from '@robin-build/landing-kit/components/Stats.astro';
+import FeatureList from '@robin-build/landing-kit/components/FeatureList.astro';
+import Hero from '@robin-build/landing-kit/components/Hero.astro';
+import Section from '@robin-build/landing-kit/components/Section.astro';
+import Demo from '../components/Demo.astro';
 import Flow from '../components/Flow.astro';
 import Site from '../layouts/Site.astro';
 import release from '../../../release.json';
 
-const stats = [
-  { value: '~8%', label: 'of one CPU core, on a real call' },
-  { value: '~23 MB', label: 'of memory while you talk' },
-  { value: '0.0%', label: 'CPU measured when no app is using the mic' },
+const facts = [
+  { value: '~8%', label: 'of one CPU core while you talk on a call' },
+  { value: '23 MB', label: 'of memory, about the size of a photo' },
+  { value: '0%', label: 'CPU when no app is using the mic' },
   { value: '0 bytes', label: 'of your audio leave your Mac' },
 ];
 
 const features = [
   {
-    tag: '01 / Everywhere',
-    title: 'Works in every app.',
-    text: 'Zoom, Meet, Slack, Discord, your browser. If an app lets you choose a microphone, Stillmic works there.',
+    title: 'Works in every app',
+    text: 'Zoom, Google Meet, Microsoft Teams, Slack, Discord, FaceTime and your browser. If an app lets you pick a microphone, Stillmic works there.',
   },
   {
-    tag: '02 / Private',
-    title: 'Stays on your Mac.',
-    text: 'Your voice is cleaned on your Mac and never stored or sent anywhere. No account and no analytics.',
+    title: 'Stays on your Mac',
+    text: 'Your voice is cleaned on your Mac and never stored or sent anywhere. No account, no analytics, no internet needed.',
   },
   {
-    tag: '03 / Idle',
-    title: 'Idle means idle.',
-    text: 'The noise engine only runs while an app is using the Stillmic mic. The rest of the day it’s asleep and your real mic stays closed.',
+    title: 'Asleep until you talk',
+    text: 'The noise engine only runs while an app is listening to the Stillmic mic. The rest of the day your real mic stays closed.',
   },
   {
-    tag: '04 / Modes',
-    title: 'Two strengths.',
-    text: 'Standard keeps your voice smooth. Aggressive cuts harder between words. Switch from the menu bar at any time.',
+    title: 'Two strengths',
+    text: 'Standard keeps your voice smooth. Aggressive cuts harder between words, for loud rooms. Switch any time from the menu bar.',
+  },
+  {
+    title: 'Starts with your Mac',
+    text: 'Turn on Start at Login once and Stillmic is there for every call, quietly, in the menu bar.',
+  },
+  {
+    title: 'Updates itself',
+    text: 'New versions arrive signed and notarized by Apple, and install with one click.',
   },
 ];
 
 const faq = [
   {
+    q: 'What does Stillmic do?',
+    a: 'It adds a microphone called Stillmic to your Mac. Pick it in any call or recording app and people hear your voice without the fan, keyboard, traffic or room noise around you.',
+  },
+  {
+    q: 'Does it work with Zoom, Google Meet and Teams?',
+    a: 'Yes. Choose Stillmic as the microphone in the app’s audio settings. It works the same way in Slack, Discord, FaceTime, OBS and browsers.',
+  },
+  {
+    q: 'Is Stillmic free?',
+    a: 'Yes. It’s free and open source under the MIT license, with no account, subscription or limits.',
+  },
+  {
     q: 'Does it clean up other people on the call?',
-    a: 'No. Stillmic only cleans your microphone.',
+    a: 'No. Stillmic only cleans your own microphone.',
   },
   {
     q: 'Why does it ask for my password?',
-    a: 'Once, to install the virtual microphone, which macOS keeps in a system folder. All audio on your Mac stops for a moment while it loads.',
+    a: 'Once, to install the Stillmic microphone, which macOS keeps in a system folder. Audio on your Mac pauses for a moment while it loads.',
   },
   {
     q: 'What happens if I quit the app?',
-    a: 'The Stillmic mic goes silent, so it never plays old audio. Pick your normal mic to stop using it, or leave Start at Login on.',
+    a: 'The Stillmic mic goes silent, so it never plays old audio. Pick your normal mic again, or leave Start at Login on.',
   },
   {
     q: 'Can I use Bluetooth earbuds as the mic?',
-    a: 'You can, but Bluetooth mics usually drop your earbuds into lower-quality call audio. A built-in or USB mic generally sounds better.',
+    a: 'You can, but Bluetooth mics usually switch earbuds to lower-quality call audio. A built-in or USB mic generally sounds better.',
+  },
+  {
+    q: 'Which Macs does it run on?',
+    a: 'Macs with Apple silicon (M1 and later) running macOS 15 or later.',
   },
   {
     q: 'What’s it built on?',
-    a: 'DeepFilterNet3, an open-source speech model, hand-ported to C so it runs with no machine learning framework. The code is on GitHub under the MIT license.',
+    a: 'DeepFilterNet3, an open-source speech model, hand-ported to C so it runs without any machine learning framework. The code is <a href="https://github.com/robin-liquidium/stillmic">on GitHub</a>.',
   },
 ];
 ---
 
 <Site>
   <main id="main">
-    <section class="hero">
-      <span class="eyebrow">
-        <span class="dot"></span> Noise removal for your Mac’s mic
-      </span>
-      <h1>
-        Just your <em>voice.</em>
-      </h1>
-      <p class="intro">
-        Stillmic takes the fan, the keyboard and the street
-        <br class="desktop" /> out of your microphone, in every app, right on
-        your Mac.
-      </p>
-      <div class="actions">
-        <a class="button primary" href="/download">
-          <DownloadIcon />
-          Download for Mac
-        </a>
-        <a class="text-link" href="#listen">
-          Hear the difference
-        </a>
-      </div>
-      <p class="small">
-        Free & open source · macOS 15+ · Apple silicon · v{release.version}
-      </p>
+    <Hero
+      lines={['Just your voice.']}
+      fit
+      lede="Stillmic takes the fan, the keyboard and the street out of your Mac’s microphone, in every app."
+      cta={{ label: 'Download for Mac', href: '/download' }}
+      link={{ label: 'Hear the difference', href: '#listen' }}
+      notes={['Free and open source', 'macOS 15 or later', 'Apple silicon']}
+    >
       <Demo />
-    </section>
+    </Hero>
 
-    <section class="stats" aria-label="How light it is">
-      <div class="section-heading">
-        <span class="eyebrow">How light it is</span>
-        <h2>
-          Light enough to <em>forget about.</em>
-        </h2>
-      </div>
-      <Stats items={stats} />
-      <p class="small">
-        Measured on an M4 Pro. Yours will vary with your Mac and how much you
-        talk. macOS’s own audio service uses some CPU on top.
-      </p>
-    </section>
+    <Section title="Light enough to forget about." layout="stack">
+      <Facts
+        items={facts}
+        note="Measured on a MacBook Pro with M4 Pro during a real call. macOS’s own audio service uses a little more on top."
+      />
+    </Section>
 
-    <section class="how">
-      <div class="section-heading center">
-        <span class="eyebrow">How it works</span>
-        <h2>
-          Pick it like <em>any other mic.</em>
-        </h2>
-        <p>
-          Stillmic adds a microphone to your Mac. Choose it in your call app and
-          everyone hears the clean version.
-        </p>
-      </div>
+    <Section
+      id="how"
+      title="Pick it like any other mic."
+      intro="Stillmic adds a microphone to your Mac. Choose it in your call app and everyone hears the clean version."
+      layout="stack"
+    >
       <Flow />
-    </section>
+    </Section>
 
-    <section>
-      <Features items={features} />
-    </section>
+    <Section title="Made to disappear.">
+      <FeatureList items={features} />
+    </Section>
 
-    <section class="faq">
-      <h2>Questions.</h2>
+    <Section id="questions" title="Questions.">
       <Faq items={faq} />
-    </section>
+    </Section>
 
-    <section class="install">
-      <h2>
-        Take the noise <br />
-        <em>out of the call.</em>
-      </h2>
-      <a class="button primary" href="/download">
-        <DownloadIcon />
-        Download Stillmic
-      </a>
-      <p class="small">No account. No analytics. Just your voice.</p>
-    </section>
+    <Closing
+      lines={['Take the noise', 'out of the call.']}
+      href="/download"
+      label="Download Stillmic"
+      details={[`Version ${release.version}`, '9 MB', 'macOS 15 or later']}
+    />
   </main>
 </Site>

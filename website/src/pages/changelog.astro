@@ -3,12 +3,16 @@ import Site from '../layouts/Site.astro';
 import release from '../../../release.json';
 ---
 
-<Site title="Changelog · Stillmic" description="What’s new in Stillmic.">
-  <main id="main" class="prose">
+<Site
+  title="Changelog: what’s new in Stillmic"
+  description="Every Stillmic release, with what changed."
+>
+  <main id="main" class="rb-prose rb-shell">
     <h1>Changelog</h1>
-    <section class="release">
-      <div class="release-heading">
-        <h2>{release.version}</h2>
+    <p class="rb-lede">What changed in each version of Stillmic.</p>
+    <section class="rb-release">
+      <div class="rb-release-head">
+        <h2>Version {release.version}</h2>
         <time datetime={release.date}>{release.date}</time>
       </div>
       <ul>

@@ -14,11 +14,12 @@
     "lint:fix": "bun lint --no-script --fix"
   },
   "dependencies": {
-    "@robin-build/landing-kit": "github:robin-liquidium/landing-kit#v0.3.1",
+    "@robin-build/landing-kit": "file:../../landing-kit",
     "astro": "7.3.2"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
+    "@astrojs/sitemap": "3.7.4",
     "bun": "1.4.4-canary.20261102.1",
     "prettier": "3.9.6",
     "prettier-plugin-astro": "1.0.0",
