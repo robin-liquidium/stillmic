@@ -1,0 +1,42 @@
+---
+import Page from '@robin-build/landing-kit/Page.astro';
+import type { Site } from '@robin-build/landing-kit/projects';
+import '@robin-build/landing-kit/design.css';
+import '../styles/site.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const repo = 'https://github.com/robin-liquidium/stillmic';
+const site: Site = {
+  id: 'stillmic',
+  name: 'Stillmic',
+  icon: '/icon.png',
+  themeColor: { light: '#f6f5f0', dark: '#0d121f' },
+  ogImage: 'https://stillmic.robin.build/og.png',
+  nav: [
+    { label: 'Changelog', href: '/changelog' },
+    { label: 'GitHub', href: repo },
+  ],
+  footerLinks: [
+    { label: 'Privacy', href: '/privacy' },
+    { label: 'Help & feedback', href: `${repo}/issues` },
+  ],
+};
+const {
+  title = 'Stillmic: just your voice',
+  description = 'Removes the fan, the keyboard and the street from your Mac’s microphone, in every app. Free, open source, and it never leaves your Mac.',
+} = Astro.props;
+---
+
+<Page site={site} title={title} description={description}>
+  <slot />
+  <Fragment slot="credits">
+    Noise removal by{' '}
+    <a href="https://github.com/Rikorose/DeepFilterNet">DeepFilterNet</a>. Began
+    as a fork of{' '}
+    <a href="https://github.com/ivalsaraj/NoNoise-Mac">NoNoise-Mac</a>. MIT
+    licensed.
+  </Fragment>
+</Page>
