@@ -1,0 +1,260 @@
+/* Stillmic's colours, plus the listening demo and the flow diagram. */
+:root {
+  --bg: #f6f5f0;
+  --ink: #141c30;
+  --muted: #5e6575;
+  --line: #dddcd4;
+  --accent: #0c7566;
+  --accent-hover: #095f53;
+  --on-accent: #ffffff;
+  --code: #eeede6;
+  --stage: #141c30;
+  --stage-ink: #e9eef0;
+  --stage-muted: #8f9bb0;
+  --stage-line: #2a3450;
+  --mint: #8fd3c8;
+  --noise: #6c7890;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-auto-dark] {
+    --bg: #0d121f;
+    --ink: #edf0ef;
+    --muted: #98a1b3;
+    --line: #242c41;
+    --accent: #8fd3c8;
+    --accent-hover: #a9e2d8;
+    --on-accent: #0d121f;
+    --code: #161d2e;
+    --stage: #151c2f;
+  }
+}
+
+/* Listening demo */
+.demo {
+  --bar-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  margin-top: 56px;
+  padding: 28px 32px 22px;
+  border-radius: 28px;
+  background: var(--stage);
+  color: var(--stage-ink);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  scroll-margin-top: 28px;
+  background-image: radial-gradient(
+    ellipse 70% 62% at 50% 58%,
+    #8fd3c81f,
+    transparent 72%
+  );
+}
+.demo-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.play {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mint);
+  color: #10182a;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.play:hover {
+  transform: scale(1.05);
+}
+.play:active {
+  transform: scale(0.96);
+}
+.play svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+.icon-pause,
+.is-playing .icon-play {
+  display: none;
+}
+.is-playing .icon-pause {
+  display: block;
+}
+.is-loading .play {
+  opacity: 0.6;
+}
+.demo-title {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.demo-title strong {
+  font-size: 16px;
+  font-weight: 500;
+}
+.demo-title > span {
+  font-size: 13px;
+  color: var(--stage-muted);
+  font-variant-numeric: tabular-nums;
+}
+.switch {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.switch-track {
+  display: block;
+  flex: none;
+  width: 54px;
+  height: 32px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--stage-line);
+  transition: background-color 0.25s;
+}
+.switch-thumb {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.3s var(--bar-ease);
+}
+.is-on .switch-track {
+  background: var(--mint);
+}
+.is-on .switch-thumb {
+  transform: translateX(22px);
+}
+.wave {
+  position: relative;
+  height: 280px;
+  margin: 26px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.wave i {
+  flex: 1;
+  min-width: 0;
+  height: calc(max(var(--o), 0.018) * 100%);
+  border-radius: 99px;
+  background: var(--noise);
+  transition:
+    height 0.7s var(--bar-ease),
+    background-color 0.4s,
+    opacity 0.2s;
+}
+.is-on .wave i {
+  height: calc(max(var(--s), 0.018) * 100%);
+  background: var(--mint);
+}
+.is-playing .wave i:not(.played) {
+  opacity: 0.42;
+}
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--stage-ink);
+  opacity: 0;
+  pointer-events: none;
+}
+.is-playing .playhead {
+  opacity: 0.7;
+}
+.demo-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--stage-muted);
+}
+
+.flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 32px;
+  margin-top: 60px;
+}
+.flow-side,
+.flow-core {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.flow-core {
+  align-self: center;
+  color: var(--ink);
+}
+.flow-core img {
+  display: block;
+}
+.flow-bars {
+  width: 100%;
+  height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.flow-bars i {
+  flex: 0 1 6px;
+  height: calc(max(var(--v), 0.03) * 100%);
+  border-radius: 99px;
+  background: var(--muted);
+  opacity: 0.45;
+}
+.flow-bars.clean i {
+  background: var(--accent);
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .demo {
+    margin-top: 40px;
+    padding: 18px 16px 16px;
+    border-radius: 20px;
+  }
+  .play {
+    width: 46px;
+    height: 46px;
+  }
+  .demo-top {
+    gap: 12px;
+  }
+  .switch-label {
+    display: none;
+  }
+  .wave {
+    height: 180px;
+    gap: 1px;
+  }
+  .flow {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    margin-top: 40px;
+  }
+  .flow-bars {
+    height: 64px;
+  }
+}

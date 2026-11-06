@@ -5,6 +5,7 @@
     "": {
       "name": "stillmic-website",
       "dependencies": {
+        "@robin-build/landing-kit": "github:robin-liquidium/landing-kit#v0.2.0",
         "astro": "7.3.2",
       },
       "devDependencies": {
@@ -275,6 +276,8 @@
     "@poppinss/exception": ["@poppinss/exception@1.2.3", "", {}, "sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw=="],
 
     "@prettier/parse-srcset": ["@prettier/parse-srcset@3.1.0", "", {}, "sha512-FIRv2rZotO9NP/r66taYqD1zICpPiBbrECqjKV/xqNotqDxF7fLzzUeK+1RSRx9Tenk0DajR/GcRmTJ2qtHaKQ=="],
+
+    "@robin-build/landing-kit": ["@robin-build/landing-kit@github:robin-liquidium/landing-kit#ffde4bf", { "peerDependencies": { "astro": ">=7" } }, "robin-liquidium-landing-kit-ffde4bf", "sha512-Y+jGQdY7ajlQ1vLyhn7HR6prEzgO5zB734B0ZmwX+6G1NzBvkdJa+SY+7hklCMgspKutEZCjfW0doP1XMxON3g=="],
 
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.16", "", { "os": "android", "cpu": "arm" }, "sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA=="],
 

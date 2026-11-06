@@ -1,8 +1,11 @@
 ---
 import Demo from '../components/Demo.astro';
-import DownloadIcon from '../components/DownloadIcon.astro';
+import DownloadIcon from '@robin-build/landing-kit/components/DownloadIcon.astro';
+import Faq from '@robin-build/landing-kit/components/Faq.astro';
+import Features from '@robin-build/landing-kit/components/Features.astro';
+import Stats from '@robin-build/landing-kit/components/Stats.astro';
 import Flow from '../components/Flow.astro';
-import Page from '../layouts/Page.astro';
+import Site from '../layouts/Site.astro';
 import release from '../../../release.json';
 
 const stats = [
@@ -59,12 +62,12 @@ const faq = [
 ];
 ---
 
-<Page>
+<Site>
   <main id="main">
     <section class="hero">
-      <div class="eyebrow">
+      <span class="eyebrow">
         <span class="dot"></span> Noise removal for your Mac’s mic
-      </div>
+      </span>
       <h1>
         Just your <em>voice.</em>
       </h1>
@@ -95,14 +98,7 @@ const faq = [
           Light enough to <em>forget about.</em>
         </h2>
       </div>
-      <dl>
-        {stats.map((stat) => (
-          <div>
-            <dt>{stat.label}</dt>
-            <dd>{stat.value}</dd>
-          </div>
-        ))}
-      </dl>
+      <Stats items={stats} />
       <p class="small">
         Measured on an M4 Pro. Yours will vary with your Mac and how much you
         talk. macOS’s own audio service uses some CPU on top.
@@ -123,26 +119,13 @@ const faq = [
       <Flow />
     </section>
 
-    <section class="features">
-      {features.map((feature) => (
-        <article>
-          <span class="feature-number">{feature.tag}</span>
-          <h3>{feature.title}</h3>
-          <p>{feature.text}</p>
-        </article>
-      ))}
+    <section>
+      <Features items={features} />
     </section>
 
     <section class="faq">
       <h2>Questions.</h2>
-      <div>
-        {faq.map((item) => (
-          <details>
-            <summary>{item.q}</summary>
-            <p>{item.a}</p>
-          </details>
-        ))}
-      </div>
+      <Faq items={faq} />
     </section>
 
     <section class="install">
@@ -157,4 +140,4 @@ const faq = [
       <p class="small">No account. No analytics. Just your voice.</p>
     </section>
   </main>
-</Page>
+</Site>
