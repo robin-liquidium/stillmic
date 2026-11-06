@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://stillmic.robin.build/sitemap.xml
+
+Sitemap: https://stillmic.robin.build/sitemap-index.xml

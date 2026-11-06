@@ -1,39 +1,42 @@
-/* Stillmic's colours, plus the listening demo and the flow diagram. */
+/* Stillmic: cool mist and deep teal; the demo is the dark centrepiece. */
 :root {
-  --bg: #f6f5f0;
-  --ink: #141c30;
-  --muted: #5e6575;
-  --line: #dddcd4;
-  --accent: #0c7566;
-  --accent-hover: #095f53;
-  --on-accent: #ffffff;
-  --code: #eeede6;
-  --stage: #141c30;
-  --stage-ink: #e9eef0;
-  --stage-muted: #8f9bb0;
-  --stage-line: #2a3450;
+  --bg: #eef1f0;
+  --fg: #0c1514;
+  --muted: #56615f;
+  --faint: #606665;
+  --line: #d3dad8;
+  --surface: #e2e8e6;
+  --accent: #0d5f55;
+  --accent-hover: #0a4c44;
+  --on-accent: #f1f6f5;
+  --stage: #08100f;
+  --stage-ink: #e6eeec;
+  --stage-muted: #7f918e;
+  --stage-line: #1d2b29;
   --mint: #8fd3c8;
-  --noise: #6c7890;
+  --noise: #4f625f;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-auto-dark] {
-    --bg: #0d121f;
-    --ink: #edf0ef;
-    --muted: #98a1b3;
-    --line: #242c41;
+    --bg: #070b0b;
+    --fg: #e6eeec;
+    --muted: #93a19e;
+    --faint: #7d8382;
+    --line: #1c2624;
+    --surface: #101817;
     --accent: #8fd3c8;
-    --accent-hover: #a9e2d8;
-    --on-accent: #0d121f;
-    --code: #161d2e;
-    --stage: #151c2f;
+    --accent-hover: #aee2d9;
+    --on-accent: #06100e;
+    --stage: #0c1615;
   }
 }
 
 /* Listening demo */
 .demo {
   --bar-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  margin-top: 56px;
-  padding: 28px 32px 22px;
+  margin-top: clamp(48px, 7vw, 96px);
+  padding: clamp(20px, 3vw, 40px) clamp(18px, 3.2vw, 44px)
+    clamp(18px, 2.4vw, 30px);
   border-radius: 28px;
   background: var(--stage);
   color: var(--stage-ink);
@@ -140,7 +143,7 @@
 }
 .wave {
   position: relative;
-  height: 280px;
+  height: clamp(180px, 26vw, 360px);
   margin: 26px 0 14px;
   display: flex;
   align-items: center;
@@ -257,4 +260,9 @@
   .flow-bars {
     height: 64px;
   }
+}
+
+/* The demo is dark in both themes, so its focus ring must be light. */
+.demo :focus-visible {
+  outline-color: var(--stage-ink);
 }
