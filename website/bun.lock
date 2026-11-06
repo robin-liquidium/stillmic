@@ -5,7 +5,7 @@
     "": {
       "name": "stillmic-website",
       "dependencies": {
-        "@robin-build/landing-kit": "github:robin-liquidium/landing-kit#v1.0.0",
+        "@robin-build/landing-kit": "github:robin-liquidium/landing-kit#v1.0.1",
         "astro": "7.3.2",
       },
       "devDependencies": {
@@ -280,7 +280,7 @@
 
     "@prettier/parse-srcset": ["@prettier/parse-srcset@3.1.0", "", {}, "sha512-FIRv2rZotO9NP/r66taYqD1zICpPiBbrECqjKV/xqNotqDxF7fLzzUeK+1RSRx9Tenk0DajR/GcRmTJ2qtHaKQ=="],
 
-    "@robin-build/landing-kit": ["@robin-build/landing-kit@github:robin-liquidium/landing-kit#e818df4", { "peerDependencies": { "astro": ">=7" } }, "robin-liquidium-landing-kit-e818df4", "sha512-pAtaXxorcQx8Uiyic95Z4LXiW1I8I9ECyPAcLDyxoUJiwzngnSwI/CMwJjTSv1PRDe1R7z57jwac91KmdbMg4g=="],
+    "@robin-build/landing-kit": ["@robin-build/landing-kit@github:robin-liquidium/landing-kit#c32fc62", { "peerDependencies": { "astro": ">=7" } }, "robin-liquidium-landing-kit-c32fc62", "sha512-A6379ou5w4Op4XJD+uARbN1hgeQF94D+CJe82vaw6+2yhArK9+HnQh2OfZtbwtQHneKvcDPVU9wy5bWf6keylw=="],
 
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.16", "", { "os": "android", "cpu": "arm" }, "sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA=="],
 
