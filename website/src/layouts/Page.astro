@@ -1,6 +1,6 @@
 ---
-import regularFont from '../assets/fonts/satoma-sans-400.woff2?url';
-import headingFont from '../assets/fonts/satoma-sans-600.woff2?url';
+import regularFont from '../assets/fonts/satoma-sans-400-latin.woff2?url';
+import headingFont from '../assets/fonts/satoma-sans-600-latin.woff2?url';
 import '../styles/global.css';
 
 interface Props {
@@ -66,9 +66,7 @@ const repo = 'https://github.com/robin-liquidium/stillmic';
         </a>
         <nav aria-label="Main navigation">
           <a href="/changelog">Changelog</a>
-          <a href={repo}>
-            GitHub <span aria-hidden="true">↗</span>
-          </a>
+          <a href={repo}>GitHub</a>
         </nav>
       </header>
       <slot />
@@ -80,7 +78,7 @@ const repo = 'https://github.com/robin-liquidium/stillmic';
         </span>
         <div>
           <a href="/privacy">Privacy</a>
-          <a href={`${repo}/issues`}>Help & feedback ↗</a>
+          <a href={`${repo}/issues`}>Help & feedback</a>
         </div>
         <p>
           Noise removal by{' '}
