@@ -146,6 +146,22 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
             defaults.set(true, forKey: "offeredDriverInstall")
             DispatchQueue.main.async { [weak self] in self?.installDriver() }
         }
+
+        // An app update can't replace the system-folder driver by itself, so say so once per
+        // driver version instead of leaving a new app running on an old driver unnoticed.
+        if !CommandLine.arguments.contains("--no-audio"),
+           let installed = driverVersion(at: URL(fileURLWithPath: installedDriver)),
+           let bundled = Bundle.main.url(forResource: "Stillmic", withExtension: "driver").flatMap(driverVersion(at:)),
+           installed != bundled,
+           defaults.string(forKey: "offeredDriverUpdate") != bundled {
+            defaults.set(bundled, forKey: "offeredDriverUpdate")
+            DispatchQueue.main.async { [weak self] in
+                self?.runDriverInstall(
+                    asking: "Update the Stillmic microphone?",
+                    detail: "This update includes a newer Stillmic microphone. Until you update it, the app keeps using the older one. You can also do it later from the menu bar.",
+                    action: "Update", cancel: "Later")
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -341,8 +357,12 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func installDriver() {
+        runDriverInstall(asking: "Install Stillmic Mic?", detail: nil, action: "Install", cancel: "Cancel")
+    }
+
+    private func runDriverInstall(asking title: String, detail: String?, action: String, cancel: String) {
         guard let source = Bundle.main.url(forResource: "Stillmic", withExtension: "driver")?.path else { return }
-        guard confirm("Install Stillmic Mic?", action: "Install") else { return }
+        guard confirm(title, detail: detail, action: action, cancel: cancel) else { return }
         let hal = (installedDriver as NSString).deletingLastPathComponent
         let dest = shellQuote(installedDriver)
         // Staged and backup names don't end in .driver, so coreaudiod ignores them. The working
@@ -358,19 +378,20 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func uninstallDriver() {
-        guard confirm("Uninstall Stillmic Mic?", action: "Uninstall") else { return }
+        guard confirm("Uninstall Stillmic Mic?", detail: nil, action: "Uninstall", cancel: "Cancel") else { return }
         runPrivileged("/bin/rm -rf \(shellQuote(installedDriver)) && (/usr/bin/killall coreaudiod || true)")
     }
 
-    private func confirm(_ title: String, action: String) -> Bool {
+    private func confirm(_ title: String, detail: String?, action: String, cancel: String) -> Bool {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.messageText = title
-        alert.informativeText = "macOS asks for your password, and all audio on this Mac stops for a moment, "
+        alert.informativeText = (detail.map { $0 + "\n\n" } ?? "")
+            + "macOS asks for your password, and all audio on this Mac stops for a moment, "
             + "including any call in progress. Apps that were playing sound may need restarting, "
             + "and browser tabs may need reloading."
         alert.addButton(withTitle: action)
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: cancel)
         return alert.runModal() == .alertFirstButtonReturn
     }
 
