@@ -3,7 +3,7 @@
   --bg: #eef1f0;
   --fg: #0c1514;
   --muted: #56615f;
-  --faint: #86908e;
+  --faint: #606665;
   --line: #d3dad8;
   --surface: #e2e8e6;
   --accent: #0d5f55;
@@ -21,7 +21,7 @@
     --bg: #070b0b;
     --fg: #e6eeec;
     --muted: #93a19e;
-    --faint: #66736f;
+    --faint: #7d8382;
     --line: #1c2624;
     --surface: #101817;
     --accent: #8fd3c8;
@@ -260,4 +260,9 @@
   .flow-bars {
     height: 64px;
   }
+}
+
+/* The demo is dark in both themes, so its focus ring must be light. */
+.demo :focus-visible {
+  outline-color: var(--stage-ink);
 }
